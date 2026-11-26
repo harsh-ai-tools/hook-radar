@@ -11,7 +11,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 <p align="center"><img src="docs/how-it-works.png" alt="How Reel Radar works" width="100%"></p>
 
 ## 📸 See it in action
-**Live dashboard**: see and *hear* exactly what the AI watches: 🔊 play the sound, 🎤 words light up as they're spoken, 👂 live sound graph (speech, music, re-hook drops), 📚 replay any video it already watched
+**Live dashboard**: calm, plain-English cards · 4-step progress bar · 🔊 Speaker / Mute button · Light / Dark mode · technical log tucked under *Technical details* · 📚 replay any video it already watched
 <p align="center"><img src="docs/dashboard.png" alt="Live dashboard" width="100%"></p>
 
 **Playbook**: You vs Them, creator profiles and every video in one page
@@ -43,6 +43,10 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 - **Comment ideas**: viewer questions turned into video ideas
 - **Next-video brief**: targets, hook formulas, structure and sound plan
 
+**📡 Live mode (v2.3.0)**: Claude watches in the Claude app's built-in browser, view-only, and the dashboard updates as it goes. Zero downloads.
+- **YouTube Shorts**: plays through the official embed; Claude reads the on-page captions, so words light up as they're spoken
+- **Instagram Reels**: plays through the official embed with Claude's visual and on-screen-text notes. Instagram has no captions, so **audio transcription for Reels isn't supported yet**
+
 **📈 Retention & 🖼️ thumbnails**
 - **Retention import**: drop in a YouTube Studio *Audience retention* export (CSV or the .zip). See your 3-second hold, the biggest drops, what was said or shown at each drop, and rewatch spikes
 - **Thumbnail check**: contrast, colour, clutter, text amount and whether the text is still readable at phone size, with fixes and You vs Them
@@ -60,7 +64,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 | 🚀 Setup (`radar-setup`) | Type **start**: 3 questions, opens your video folder, runs the first analysis |
 | ✅ Pre-post check (`radar-check`) | Grades a draft video, script or thumbnail before you post |
 | 🔭 Scout | Finds the right competitors for your niche (you approve) |
-| 👀 Live Watcher | Watches Reels/Shorts in your browser, view-only |
+| 👀 Live Watcher | Watches Reels/Shorts in the Claude app's built-in browser, view-only, and logs them to the dashboard |
 | 🧠 Mastermind | Learns why competitors grow and writes your brief |
 | ✍️ Scriptwriter | Writes hooks and scripts in your voice |
 | ✂️ Video Editor | Timecoded edit plan: cuts, captions, sound |
@@ -141,5 +145,7 @@ Open Claude in the Reel Radar folder and type:
 - [x] One-click installer + Claude plugin
 - [x] Retention-curve import from YouTube Studio exports
 - [x] Thumbnail analysis (contrast, clutter, text, phone-size legibility)
+- [x] Live mode: YouTube Shorts with live captions, Instagram Reels (visual notes)
+- [ ] Instagram Reels audio transcription
 
 > ⚠️ For study only. Don't re-upload other creators' videos or copy their scripts. AI output is a draft: verify facts before posting.
