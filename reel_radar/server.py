@@ -31,7 +31,15 @@ class H(SimpleHTTPRequestHandler):
 
     def _send_file(self, p):
         ctype = mimetypes.guess_type(str(p))[0] or "application/octet-stream"
-        data = p.read_bytes()
+        data = None
+        for _ in range(10):
+            try:
+                data = p.read_bytes()
+                break
+            except OSError:          # file being replaced right now (Windows)
+                import time; time.sleep(0.03)
+        if data is None:
+            return self.send_error(503, "busy, retry")
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
@@ -51,8 +59,10 @@ class H(SimpleHTTPRequestHandler):
         cookie = self.headers.get("Cookie") or ""
         key = parse_qs(u.query).get("k", [""])[0]
         has_cookie = any(c.strip() == f"rr_k={TOKEN}" for c in cookie.split(";"))
-        if has_cookie or secrets.compare_digest(key, TOKEN):
-            return True, "key from link" if not has_cookie else "ok"
+        if secrets.compare_digest(key, TOKEN):
+            return True, "key from link"            # always redirect so the key leaves the URL
+        if has_cookie:
+            return True, "ok"
         return False, "missing private key: open the link printed in the terminal"
 
     def do_GET(self):

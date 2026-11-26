@@ -8,6 +8,10 @@ Made by Harsh Rajput · MIT
 import base64, json, os, re, shutil, subprocess, urllib.request
 os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")   # privacy: no usage pings
 os.environ.setdefault("DO_NOT_TRACK", "1")
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")      # harmless Windows notice, hide it
+os.environ.setdefault("HF_HUB_VERBOSITY", "error")
+import warnings
+warnings.filterwarnings("ignore", module="huggingface_hub")
 from pathlib import Path
 from statistics import median
 
@@ -145,6 +149,16 @@ def ocr(frames):
 
 
 # ------------------------------------------------------------------ EARS
+def load_audio(video, sr=16000):
+    """Mono 16 kHz float32 audio via ffmpeg (what Whisper expects)."""
+    import numpy as np
+    r = subprocess.run(["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-i", str(video),
+                        "-vn", "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"], capture_output=True)
+    if r.returncode != 0:
+        raise RuntimeError("ffmpeg could not read the audio: " + r.stderr.decode("utf-8", "ignore")[-200:])
+    return np.frombuffer(r.stdout, np.float32).copy()
+
+
 _wm = None
 def transcribe(video, size, gpu=False, language=None):
     global _wm
@@ -161,7 +175,8 @@ def transcribe(video, size, gpu=False, language=None):
             _wm = WhisperModel(size, device="cpu", compute_type="int8")
             live.log("[ears] whisper on CPU")
     lang = language if language and language not in ("auto", "") else None
-    segs, info = _wm.transcribe(str(video), word_timestamps=True, vad_filter=True, language=lang)
+    audio = load_audio(video)                        # decode with ffmpeg: no PyAV version problems
+    segs, info = _wm.transcribe(audio, word_timestamps=True, vad_filter=True, language=lang)
     words, text = [], []
     for s in segs:
         text.append(s.text.strip())
@@ -192,33 +207,57 @@ def silences(video, noise="-35dB", d=0.25):
     return [{"s": round(max(a, 0), 2), "e": round(b, 2)} for a, b in zip(starts, ends)]
 
 
+def _frames_db(audio, sr=16000, frame=0.05):
+    import numpy as np
+    n = int(sr * frame)
+    k = len(audio) // n
+    if k == 0:
+        return np.array([]), frame
+    rms = np.sqrt((audio[: k * n].reshape(k, n) ** 2).mean(axis=1) + 1e-12)
+    return 20 * np.log10(rms + 1e-9), frame
+
+
 def ears(video, words, dur):
+    """Sound design: music bed, voice level, silences, drops, energy changes."""
+    import numpy as np
     curve = loudness_curve(video)
     sil = silences(video)
-    speaking = lambda t: any(w["s"] - 0.1 <= t <= w["e"] + 0.1 for w in words)
-    bed = [m for t, m in curve if not speaking(t) and m > -60]
-    voice = [m for t, m in curve if speaking(t) and m > -60]
+    db, step = _frames_db(load_audio(video))
+    t = np.arange(len(db)) * step
+    bed_db = voice_db = None
+    if len(db):
+        if words:
+            span = (t >= words[0]["s"]) & (t <= words[-1]["e"])
+            speech = np.zeros(len(db), bool)
+            for w in words:
+                speech |= (t >= w["s"]) & (t <= w["e"])
+            floor = np.percentile(db[span], 10) if span.any() else np.percentile(db, 10)
+            voice_db = float(np.median(db[speech])) if speech.any() else None
+        else:
+            floor = float(np.percentile(db, 10))
+        bed_db = float(floor)
+    # music bed = a sound floor that never drops to silence under/between the words
+    has_bed = bed_db is not None and bed_db > -45 and (voice_db is None or voice_db - bed_db < 30)
     drops = []
     for i in range(2, len(curve)):
         prev = (curve[i - 1][1] + curve[i - 2][1]) / 2
         if prev - curve[i][1] >= 10 and curve[i][1] > -70:
             drops.append(curve[i][0])
-    energy_shifts = 0
-    for i in range(2, len(voice)):
-        if abs(voice[i] - voice[i - 2]) >= 4:
-            energy_shifts += 1
+    voice = [m for tt, m in curve if any(w["s"] <= tt <= w["e"] for w in words) and m > -60]
+    energy_shifts = sum(1 for i in range(2, len(voice)) if abs(voice[i] - voice[i - 2]) >= 4)
     out = {
-        "music_bed_lufs": round(median(bed), 1) if bed else None,
-        "has_music_bed": bool(bed) and bool(voice) and median(bed) > -45,
-        "voice_lufs": round(median(voice), 1) if voice else None,
-        "voice_vs_music_db": round(median(voice) - median(bed), 1) if bed and voice else None,
+        "has_music_bed": bool(has_bed),
+        "music_bed_db": round(bed_db, 1) if has_bed else None,
+        "voice_db": round(voice_db, 1) if voice_db is not None else None,
+        "voice_vs_music_db": round(voice_db - bed_db, 1) if has_bed and voice_db is not None else None,
         "silences": sil,
-        "silences_over_0_3s": sum(1 for s in sil if s["e"] - s["s"] > 0.3),
+        "silences_over_0_3s": sum(1 for x in sil if x["e"] - x["s"] > 0.3),
         "energy_drops_s": drops[:20],
         "voice_energy_shifts_per_10s": round(energy_shifts / dur * 10, 1) if dur else 0,
         "curve": curve,
     }
-    live.log(f"[ears] music bed {out['music_bed_lufs']} LUFS · {len(sil)} silences · {len(drops)} drops")
+    live.log(f"[ears] music bed: {'yes, ' + str(out['music_bed_db']) + ' dB' if has_bed else 'none'} · "
+             f"{len(sil)} silences · {len(drops)} drops")
     return out
 
 
@@ -239,8 +278,15 @@ def pacing(dur, cuts, words):
     }
 
 
+def join_words(ws):
+    text = " ".join(ws)
+    text = re.sub(r"\s+([,.!?%:;)\]'’])", r"\1", text)       # no space before punctuation
+    text = re.sub(r"(\d) ([,.]\d)", r"\1\2", text)
+    return re.sub(r"([(\[]) ", r"\1", text).strip()
+
+
 def hook(words, ocr_lines, cuts):
-    spoken = " ".join(w["w"] for w in words if w["s"] < 3.0)
+    spoken = join_words([w["w"] for w in words if w["s"] < 3.0])
     on_screen = " / ".join(o["text"] for o in ocr_lines if o["t"] <= 3.0)
     return {"spoken_3s": spoken, "on_screen_3s": on_screen,
             "visual_change_in_first_1s": any(c <= 1.05 for c in cuts),

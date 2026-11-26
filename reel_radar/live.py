@@ -13,11 +13,26 @@ def set_out(out):
 
 
 def _save():
+    """Write live.json for the dashboard. Never crashes the analysis:
+    on Windows the file can be briefly locked while the dashboard reads it, so retry, then skip."""
     _state["updated"] = time.time()
-    _path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = _path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(_state, ensure_ascii=False), "utf-8")
-    tmp.replace(_path)
+    data = json.dumps(_state, ensure_ascii=False)
+    try:
+        _path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = _path.with_suffix(".tmp")
+        tmp.write_text(data, "utf-8")
+    except OSError:
+        return
+    for _ in range(20):
+        try:
+            tmp.replace(_path)
+            return
+        except OSError:              # PermissionError on Windows while the file is being read
+            time.sleep(0.03)
+    try:
+        _path.write_text(data, "utf-8")
+    except OSError:
+        pass                         # dashboard misses one update; analysis carries on
 
 
 def settings(**kw):

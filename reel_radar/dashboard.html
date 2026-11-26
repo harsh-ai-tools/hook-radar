@@ -36,6 +36,7 @@ small{color:var(--dim)}
   <div class="p"><h3>WHAT THE AI NOTICED</h3><div class="log" id="notes"></div></div></div>
 </div>
 <script>
+if(location.search)history.replaceState(null,'',location.pathname);   // keep the private key out of history
 let lastVid=null,lastUp=0;
 const $=id=>document.getElementById(id);
 function notes(a){if(!a)return'';const n=[],p=a.pacing||{},h=a.hook||{},au=a.audio||{};
@@ -45,7 +46,7 @@ function notes(a){if(!a)return'';const n=[],p=a.pacing||{},h=a.hook||{},au=a.aud
  if(p.first_word_at_s!=null)n.push('⏱ First word at '+p.first_word_at_s+'s');
  n.push('✂ '+p.cuts_per_10s+' cuts per 10s · avg shot '+p.avg_shot_s+'s');
  n.push('🎙 '+p.wpm+' words/min');
- n.push(au.has_music_bed?('🎵 Music bed '+au.music_bed_lufs+' LUFS, voice +'+au.voice_vs_music_db+' dB over it'):'🔇 No clear music bed');
+ n.push(au.has_music_bed?('🎵 Music bed '+au.music_bed_db+' dB, voice +'+au.voice_vs_music_db+' dB over it'):'🔇 No clear music bed');
  if((au.energy_drops_s||[]).length)n.push('📉 Audio drops at '+au.energy_drops_s.join('s, ')+'s (re-hook moments?)');
  if((a.ctas||[]).length)n.push('📣 CTAs: '+a.ctas.join(', '));
  if(a.analysis&&a.analysis.why_it_works)n.push('🧠 '+a.analysis.why_it_works);
