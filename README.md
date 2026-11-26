@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/banner.png" alt="Reel Radar" width="100%"></p>
 
-<h1 align="center">📡 Reel Radar</h1>
+<h1 align="center"><img src="docs/logo.svg" width="40" align="top"> Reel Radar</h1>
 <p align="center"><b>A free, local AI team that studies your competitors' Shorts, Reels & TikToks and tells you exactly what to make next.</b><br>
 Runs 100% on your PC · never downloads videos · no paid APIs · works with Claude</p>
 <p align="center"><i>Made by Harsh Rajput · MIT License</i></p>
@@ -17,7 +17,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 **Playbook**: You vs Them, creator profiles and every video in one page
 <p align="center"><img src="docs/playbook.png" alt="Playbook report" width="100%"></p>
 
-<sub>Screenshots use demo videos generated for testing.</sub>
+<sub>Dashboard: Claude watching a public YouTube Short in Live mode (the video plays in the official embed). Playbook: demo videos generated for testing.</sub>
 
 ---
 
