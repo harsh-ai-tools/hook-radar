@@ -1,0 +1,72 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Reel Radar · Live</title>
+<style>
+:root{--bg:#0b0f14;--panel:#121821;--line:#243042;--txt:#d7e2f0;--dim:#7d8da3;--ok:#3fb950;--acc:#58a6ff;--warn:#d29922}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:13px ui-monospace,Consolas,monospace}
+.grid{display:grid;grid-template-columns:340px 1fr 1fr;grid-template-rows:auto 230px 1fr;gap:10px;padding:10px;height:100vh}
+.p{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;overflow:hidden;display:flex;flex-direction:column}
+.p h3{margin:0 0 8px;font-size:12px;color:var(--dim);font-weight:600}.p h3 b{color:var(--acc)}
+.top{grid-column:2/4;display:flex;flex-direction:row !important;gap:18px;align-items:center;flex-wrap:wrap}
+.pill{background:var(--ok);color:#000;border-radius:6px;padding:2px 8px;font-weight:700}
+.pill.idle{background:var(--dim)}.bar{flex:1;min-width:160px;height:8px;background:#1d2633;border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);width:0}
+.player{grid-row:1/4}.player video{width:100%;border-radius:8px;background:#000;max-height:70vh}
+.frames{grid-column:2/4;}.strip{display:flex;gap:8px;overflow-x:auto;flex:1}
+.fr{flex:0 0 auto;text-align:center}.fr img{height:150px;border-radius:6px;border:1px solid var(--line)}
+.fr span{display:block;color:var(--dim);margin-top:3px}.fr .ok{position:relative;top:-152px;left:-4px;float:right;background:var(--ok);color:#000;font-size:10px;padding:0 4px;border-radius:3px}
+.log{white-space:pre-wrap;overflow-y:auto;flex:1;line-height:1.45}
+.log .t{color:var(--dim)}.log .e{color:var(--acc)}.log .k{color:var(--ok)}
+pre{margin:0;overflow:auto;flex:1;color:#a5d6ff}
+.tr{overflow-y:auto;flex:1;line-height:1.7}.tr span{color:var(--dim);margin-right:6px}
+.stack{display:grid;grid-template-rows:1fr 1fr;gap:10px;min-height:0}
+small{color:var(--dim)}
+</style></head><body>
+<div class="grid">
+ <div class="p player"><h3>NOW WATCHING · <b id="who">—</b></h3>
+  <video id="vid" muted autoplay loop playsinline></video>
+  <div style="margin-top:8px"><small id="file"></small></div>
+  <h3 style="margin-top:12px">TRANSCRIPT</h3><div class="tr" id="tr"></div></div>
+ <div class="p top"><span class="pill idle" id="st">IDLE</span>
+  <span>eyes <b>ffmpeg+OCR</b> · ears <b>whisper</b> · brain <b id="brain">rules</b></span>
+  <span>analysed <b id="prog">0/0</b></span><div class="bar"><i id="barf"></i></div>
+  <span id="meta"></span></div>
+ <div class="p frames"><h3>FRAMES · <b id="fmeta">—</b></h3><div class="strip" id="strip"></div></div>
+ <div class="p"><h3>LIVE LOG</h3><div class="log" id="log"></div></div>
+ <div class="stack"><div class="p"><h3>ANALYSIS.JSON</h3><pre id="an">waiting…</pre></div>
+  <div class="p"><h3>WHAT THE AI NOTICED</h3><div class="log" id="notes"></div></div></div>
+</div>
+<script>
+let lastVid=null,lastUp=0;
+const $=id=>document.getElementById(id);
+function notes(a){if(!a)return'';const n=[],p=a.pacing||{},h=a.hook||{},au=a.audio||{};
+ if(h.spoken_3s)n.push('🗣 Spoken hook: "'+h.spoken_3s+'"');
+ if(h.on_screen_3s)n.push('🔤 Text hook: "'+h.on_screen_3s+'"');
+ n.push(h.visual_change_in_first_1s?'⚡ Visual changes inside 1s':'🐢 No visual change in first 1s');
+ if(p.first_word_at_s!=null)n.push('⏱ First word at '+p.first_word_at_s+'s');
+ n.push('✂ '+p.cuts_per_10s+' cuts per 10s · avg shot '+p.avg_shot_s+'s');
+ n.push('🎙 '+p.wpm+' words/min');
+ n.push(au.has_music_bed?('🎵 Music bed '+au.music_bed_lufs+' LUFS, voice +'+au.voice_vs_music_db+' dB over it'):'🔇 No clear music bed');
+ if((au.energy_drops_s||[]).length)n.push('📉 Audio drops at '+au.energy_drops_s.join('s, ')+'s (re-hook moments?)');
+ if((a.ctas||[]).length)n.push('📣 CTAs: '+a.ctas.join(', '));
+ if(a.analysis&&a.analysis.why_it_works)n.push('🧠 '+a.analysis.why_it_works);
+ return n.join('\n');}
+async function tick(){try{
+ const s=await (await fetch('out/live.json?'+Date.now())).json();
+ if(s.updated===lastUp)return;lastUp=s.updated;
+ $('st').textContent=s.status.toUpperCase();$('st').className='pill'+(s.status==='running'?'':' idle');
+ $('prog').textContent=s.progress[0]+'/'+s.progress[1];
+ $('barf').style.width=(s.progress[1]?100*s.progress[0]/s.progress[1]:0)+'%';
+ if(s.settings.brain)$('brain').textContent=s.settings.brain;
+ $('meta').textContent=s.settings.device||'';
+ if(s.video){$('who').textContent=s.video.creator+' · '+s.video.platform;$('file').textContent=s.video.file;
+  if(lastVid!==s.video.id){lastVid=s.video.id;$('vid').src='/file?p='+encodeURIComponent(s.video.file);}}
+ $('fmeta').textContent=s.video?s.video.id+' · '+s.frames.length+' frames':'—';
+ $('strip').innerHTML=s.frames.map(f=>`<div class="fr"><img src="${f.src}"><b class="ok">ok</b><span>${f.t.toFixed(1)}s</span></div>`).join('');
+ $('log').innerHTML=s.log.map(l=>{const [t,...r]=l.split(' ');let x=r.join(' ');
+  x=x.replace(/^(\[[a-z]+\])/,'<span class="e">$1</span>').replace(/(\[done\].*)/,'<span class="k">$1</span>');
+  return '<span class="t">'+t+'</span> '+x}).join('\n');$('log').scrollTop=1e9;
+ $('tr').innerHTML=s.transcript.map(w=>'<span>'+w.s.toFixed(1)+'</span>'+w.w).join(' ');
+ $('an').textContent=s.analysis?JSON.stringify(s.analysis,null,2):'waiting…';
+ $('notes').textContent=notes(s.analysis);
+}catch(e){}}
+setInterval(tick,700);tick();
+</script></body></html>
