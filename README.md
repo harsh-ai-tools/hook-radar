@@ -83,7 +83,7 @@ cd reel-radar
 ---
 
 ## 🚀 Quick start (Windows)
-1. Install **Python 3.10+** (tick "Add to PATH") and **ffmpeg** (`winget install Gyan.FFmpeg`)
+1. Install **Python 3.10–3.13** (tick "Add to PATH") and **ffmpeg** (`winget install Gyan.FFmpeg`)
 2. In this folder: `pip install -r requirements.txt`
 3. `python radar.py init`: tell it your niche, platforms and competitors
 4. Put videos you already have into folders:
@@ -91,6 +91,8 @@ cd reel-radar
    - a competitor's → `library/<their name>/` (optional `stats.csv`: `file,views,likes,comments,posted`)
 5. `python radar.py watch`: the live dashboard opens at `http://127.0.0.1:8765`
 6. Open `out/playbook.html` for You vs Them
+
+*Have an NVIDIA GPU?* add `--gpu` for faster speech-to-text.
 
 *Optional AI verdict:* install [Ollama](https://ollama.com), run `ollama pull qwen2.5vl:7b`, then `python radar.py watch --ollama qwen2.5vl:7b`
 

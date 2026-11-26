@@ -12,6 +12,14 @@ and shows you exactly what to improve.
 import argparse, csv, json, shutil, sys, time
 from pathlib import Path
 
+import os
+os.chdir(Path(__file__).resolve().parent)          # work from the tool folder wherever it's launched
+for _s in (sys.stdout, sys.stderr):                  # Windows consoles: never crash on emoji/unicode names
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from reel_radar import engine, live, profile, report, server
 
 OUT = Path("out")
@@ -52,10 +60,11 @@ def jobs(p):
 def cmd_watch(a):
     need("ffmpeg"); need("ffprobe")
     p = profile.load()
+    a.language = p.get("language")
     live.set_out(OUT)
     if not a.no_dashboard:
         server.start(a.port)
-    live.settings(brain=a.ollama or "rules only", device="local · no downloads")
+    live.settings(brain=a.ollama or "rules only", device=("GPU" if a.gpu else "CPU") + " · local · no downloads")
     done = set()
     idx = OUT / "study_index.jsonl"
     if idx.exists():
@@ -98,6 +107,7 @@ def main():
     w.add_argument("--ollama", help="local vision model for AI verdict, e.g. qwen2.5vl:7b")
     w.add_argument("--ollama-host", default="http://127.0.0.1:11434")
     w.add_argument("--scene", type=float, default=0.3, help="cut sensitivity (lower = more cuts)")
+    w.add_argument("--gpu", action="store_true", help="use NVIDIA GPU for speech-to-text (needs CUDA)")
     w.add_argument("--no-ocr", action="store_true")
     w.add_argument("--no-dashboard", action="store_true")
     w.add_argument("--port", type=int, default=8765)
