@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/banner.png" alt="Reel Radar" width="100%"></p>
 
 <h1 align="center">📡 Reel Radar</h1>
-<p align="center"><b>Free, local AI that studies your competitors' Shorts, Reels & TikToks and shows you exactly what to improve.</b><br>
-Runs 100% on your PC · never downloads videos · no paid APIs</p>
+<p align="center"><b>A free, local AI team that studies your competitors' Shorts, Reels & TikToks and tells you exactly what to make next.</b><br>
+Runs 100% on your PC · never downloads videos · no paid APIs · works with Claude</p>
 <p align="center"><i>Made by Harsh Rajput · MIT License</i></p>
 
 ---
@@ -24,39 +24,53 @@ Runs 100% on your PC · never downloads videos · no paid APIs</p>
 ## ✨ Features
 
 **👁️ Eyes: what it sees**
-- **Scene cuts**: finds every cut and measures cuts per 10 seconds
-- **Key frames**: grabs the opening seconds plus one frame after every cut
-- **Contact sheet**: the whole video on one image, with timestamps
-- **On-screen text**: reads captions and titles, and where they sit on screen
-- **Visual hook**: checks if the picture changes in the first second and if frame 0 has text
+- **Scene cuts**: every cut, cuts per 10 seconds, shot length
+- **Key frames & contact sheet**: the opening seconds plus a frame after every cut
+- **On-screen text**: reads captions and titles, and where they sit
+- **Visual hook**: does the picture change in the first second? Is there text on frame 0?
 
 **👂 Ears: what it hears**
-- **Transcript**: every word with its exact time (GPU or CPU)
+- **Transcript**: every word with its exact time, in your language
 - **Spoken hook**: exactly what's said in the first 3 seconds
-- **Voice pace**: words per minute and when the first word starts
-- **Music bed**: detects background music and its loudness
-- **Voice vs music**: how much louder the voice is than the music
-- **Silences & drops**: dead air, and sudden audio drops used as re-hooks
-- **Voice energy**: how often the speaker's energy changes
+- **Voice pace**: words per minute, time to first word, energy changes
+- **Sound design**: music bed, voice-over-music level, silences, audio drops (re-hooks)
 
-**🧠 Brain: what it learns**
-- **Fixed analysis format**: every video graded on the same fields, so results compare cleanly
-- **AI verdict** *(optional, free & local via Ollama)*: hook type, format, story beats, re-hooks, ending, why it works, an idea to reuse
-- **CTA finder**: spots "comment X", "link in bio", "part 2" and more
-- **Outlier score**: shows which videos beat their creator's usual views (×2, ×10…)
+**🧠 Mastermind: what it learns**
+- **Winning traits**: what outlier videos do differently from the rest
+- **Creator style**: each competitor's hook types, length, pacing, captions, music, CTAs
+- **Outlier score**: which videos beat their creator's usual views (×2, ×10…)
+- **Trend radar**: rising words and topics in your niche, weighted by performance
+- **Comment ideas**: viewer questions turned into video ideas
+- **Next-video brief**: targets, hook formulas, structure and sound plan
 
-**📊 Reports**
-- **You vs Them**: your numbers next to your competitors', marked ahead, level or behind
-- **Creator profiles**: each competitor's typical pacing, length, hook style
-- **Playbook**: a searchable, sortable table of every video with hook thumbnails
+**✅ Create better**
+- **Pre-post check**: grade your draft 0–100 against winning videos, with exact fixes
+- **Originality check**: stops scripts that copy a competitor word for word
+- **You vs Them**: your numbers next to theirs, marked ahead, level or behind
+- **Weekly report**: outliers, gaps, trends, ideas and security in one page
 
-**🖥️ Live dashboard**
-- Watch the AI work in real time: the video, frames, live log, analysis and transcript side by side
+**🤖 AI team (for Claude)**
+| Member | Job |
+|---|---|
+| 🧭 Manager | Splits your request and hands work to the right member |
+| 🛡️ Security Guard | Checks every file, page and action *before* it happens |
+| 👮 Head of Security | Audits the Guard after every job: PASS or FAIL |
+| 🔭 Scout | Finds the right competitors for your niche (you approve) |
+| 👀 Live Watcher | Watches Reels/Shorts in your browser, view-only |
+| 🧠 Mastermind | Learns why competitors grow and writes your brief |
+| 🎬 Executive Producer | Rates ideas and rejects weak ones |
+| ✍️ Scriptwriter | Writes hooks and scripts in your voice |
+| ✂️ Video Editor | Timecoded edit plan: cuts, captions, sound |
+| ▶️ YouTube Manager | Titles, descriptions, hashtags, thumbnails |
+| 📸 Instagram Manager | Captions, hashtags, covers, collabs |
+| 📈 Coach | Learns from your real results after posting |
 
 **🔒 Safe by design**
-- Never downloads or uploads videos; it only reads files already in your `library/` folder
-- Dashboard runs only on your own PC (127.0.0.1) and can't open files outside your library
-- No logins, passwords or cookies stored
+- View-only: never downloads, uploads, likes, follows, comments or DMs
+- Only reads videos already in your `library/` folder
+- Live watching at human pace (max 30 videos / 3 hours), never on login or account pages
+- No passwords, cookies or keys saved; the Head of Security checks every run
+- Dashboard runs only on your own PC (127.0.0.1)
 
 ---
 
@@ -80,28 +94,55 @@ git clone https://github.com/harsh-ai-tools/reel-radar.git
 cd reel-radar
 ```
 
+**Way 4: Claude Code plugin**
+```
+/plugin marketplace add harsh-ai-tools/reel-radar
+/plugin install reel-radar@harsh-ai-tools
+```
+
 ---
 
-## 🚀 Quick start (Windows)
-1. Install **Python 3.10–3.13** (tick "Add to PATH") and **ffmpeg** (`winget install Gyan.FFmpeg`)
-2. In this folder: `pip install -r requirements.txt`
-3. `python radar.py init`: tell it your niche, platforms and competitors
-4. Put videos you already have into folders:
-   - your own → `library/me/`
-   - a competitor's → `library/<their name>/` (optional `stats.csv`: `file,views,likes,comments,posted`)
-5. `python radar.py watch`: the live dashboard opens at `http://127.0.0.1:8765`
-6. Open `out/playbook.html` for You vs Them
+## 🚀 Install & start (one click)
+**Windows:** double-click **`install.bat`**. It installs Python and ffmpeg if missing (it asks first), sets everything up, and connects the AI team to Claude. Then double-click **`Reel Radar.bat`**.
 
-*Have an NVIDIA GPU?* add `--gpu` for faster speech-to-text.
+**Mac / Linux:** run `./install.sh`, then `./reel-radar.sh`.
 
-*Optional AI verdict:* install [Ollama](https://ollama.com), run `ollama pull qwen2.5vl:7b`, then `python radar.py watch --ollama qwen2.5vl:7b`
+The first start asks for your niche, platforms and competitors. Then put videos **you already have** into:
+- your own → `library/me/`
+- each competitor's → `library/<their name>/`
+
+## 🧰 Commands
+| Command | What it does |
+|---|---|
+| `python radar.py init` | Set niche, language, platforms, competitors |
+| `python radar.py watch` | Analyse new videos with the live dashboard |
+| `python radar.py brief "topic"` | Next-video brief from winning videos |
+| `python radar.py precheck draft.mp4` | Grade a draft before posting |
+| `python radar.py originality script.txt` | Check a script isn't copied |
+| `python radar.py trends` / `ideas` / `patterns` | Trends, comment ideas, what winners do |
+| `python radar.py weekly` | Everything in one weekly report |
+| `python radar.py scout` / `approve "name"` | Find & approve competitors |
+| `python radar.py stats-template` | Create `stats.csv` to add views (for outlier scores) |
+| `python radar.py audit` | Head of Security check |
+| `python radar.py connect` | Connect the AI team to Claude |
+
+**Options:** `--gpu` (NVIDIA, faster speech-to-text) · `--ollama qwen2.5vl:7b` (free local AI verdict via [Ollama](https://ollama.com)) · `--whisper medium` (more accurate transcripts)
+
+## 💬 Use it with Claude
+After install, just ask Claude:
+- *"Reel Radar, find my competitors"*
+- *"Watch my library and tell me why history_hub is growing"*
+- *"Watch @creator's Reels live in my browser"*
+- *"Write my next video about the fall of Rome"*
+- *"Precheck my draft before I post"*
 
 ## 🗺️ Roadmap
-- [x] Eyes, ears, fixed analysis, live dashboard, You vs Them
-- [ ] AI team: Manager, Security Guard, Head of Security, Scout, Mastermind, Scriptwriter, Editor, YouTube & Instagram managers
-- [ ] Live browser watching (view only, no downloads)
-- [ ] Mastermind: learns creators' script & visual style and writes your next brief
-- [ ] Pre-post check, trend radar, comment mining, weekly report
-- [ ] One-click installer + Claude plugin
+- [x] Eyes, ears, live dashboard, You vs Them
+- [x] AI team with Security Guard + Head of Security
+- [x] Mastermind: patterns, briefs, trends, comment ideas, weekly report
+- [x] Pre-post check and originality check
+- [x] One-click installer + Claude plugin
+- [ ] Retention-curve import from YouTube Studio exports
+- [ ] Thumbnail analysis for long-form videos
 
-> ⚠️ For study only. Don't re-upload other creators' videos or copy their scripts word for word. AI output is a draft: verify before using.
+> ⚠️ For study only. Don't re-upload other creators' videos or copy their scripts. AI output is a draft: verify facts before posting.
