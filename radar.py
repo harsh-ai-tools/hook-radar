@@ -65,6 +65,7 @@ def add_watch_args(w):
     w.add_argument("--gpu", action="store_true", help="use NVIDIA GPU for speech-to-text (needs CUDA)")
     w.add_argument("--ollama", help="local vision model for AI verdict, e.g. qwen2.5vl:7b")
     w.add_argument("--ollama-host", default="http://127.0.0.1:11434")
+    w.add_argument("--allow-remote-ai", action="store_true", help="allow an AI host that is not this PC (sends frames/transcripts there)")
     w.add_argument("--scene", type=float, default=0.3, help="cut sensitivity (lower = more cuts)")
     w.add_argument("--no-ocr", action="store_true")
 
@@ -149,13 +150,22 @@ def cmd_originality(a):
     print(("✅ Original enough. " if ok else "⛔ ") + why + (f" (max overlap {overlap:.0%})" if overlap is not None else ""))
 
 
-def cmd_observe(a):
-    """Called by Claude while it views a video live in your browser (view-only)."""
+def cmd_check_url(a):
+    """Live Watcher MUST call this before opening every page. Exit code 0 = allowed."""
     ok, why = guard.check_url(a.url)
     if ok:
         ok, why = guard.check_live_pace()
     if not ok:
-        sys.exit(f"[guard] blocked: {why}")
+        print(f"BLOCKED: {why}")
+        sys.exit(2)
+    print("ALLOWED: open it (view only)")
+
+
+def cmd_observe(a):
+    """Called by Claude after viewing a Guard-approved page (view-only)."""
+    if not guard.was_approved(a.url):
+        guard._log("url", a.url, False, "observed without Guard approval")
+        sys.exit("[guard] blocked: run `python radar.py check-url URL` before opening a page")
     rec = {"t": time.time(), "url": a.url, "creator": a.creator, "platform": a.platform,
            "hook_spoken": a.hook, "hook_text": a.text_hook, "visual_hook": a.visual,
            "views": a.views, "notes": a.notes}
@@ -168,6 +178,38 @@ def cmd_observe(a):
     live.set_out(OUT)
     live.log(f"[live] {a.creator}: \"{a.hook or a.text_hook}\" ({a.platform})")
     print("saved observation")
+
+
+def cmd_forget(a):
+    """Delete Reel Radar's analysis data (your videos in library/ are never touched)."""
+    target = "ALL analysis data" if a.all else f"all analysis data for '{a.creator}'"
+    if not a.yes and input(f"Delete {target}? This can't be undone. Type yes: ").strip().lower() != "yes":
+        print("Cancelled."); return
+    removed = 0
+    if a.all:
+        for name in ("study", "precheck", "briefs"):
+            if (OUT / name).exists():
+                shutil.rmtree(OUT / name); removed += 1
+        keep = {"security_log.jsonl", "live_session.json"}     # audit trail + pace limits survive
+        for f in list(OUT.glob("*.json*")) + list(OUT.glob("*.md")) + list(OUT.glob("*.html")):
+            if f.name not in keep:
+                f.unlink(); removed += 1
+    else:
+        for f in (OUT / "study").glob("*.json"):
+            if json.loads(f.read_text("utf-8")).get("creator") == a.creator:
+                shutil.rmtree(OUT / "study" / f.stem, ignore_errors=True)
+                f.unlink(); removed += 1
+        for name in ("study_index.jsonl", "observations.jsonl"):
+            f = OUT / name
+            if f.exists():
+                keep = [l for l in f.read_text("utf-8").splitlines() if l.strip() and json.loads(l).get("creator") != a.creator]
+                f.write_text("".join(k + "\n" for k in keep), "utf-8")
+        p = profile.load()
+        p["competitors"] = [c for c in p["competitors"] if c["name"] != a.creator]
+        profile.save(p)
+        report.build(OUT)
+    guard._log("forget", target, True, f"user deleted {removed} items")
+    print(f"Deleted {removed} items. Videos in library/ were not touched.")
 
 
 def print_suggested(p):
@@ -278,6 +320,10 @@ def main():
     og.add_argument("script")
     br = sub.add_parser("brief", help="next-video brief built from winning competitor videos")
     br.add_argument("topic")
+    cu = sub.add_parser("check-url", help="(used by Claude) Guard approval before opening a page")
+    cu.add_argument("url")
+    fg = sub.add_parser("forget", help="delete analysis data for one creator or everything")
+    fg.add_argument("creator", nargs="?"); fg.add_argument("--all", action="store_true"); fg.add_argument("--yes", action="store_true")
     ob = sub.add_parser("observe", help="(used by Claude) log a live, view-only browser observation")
     for x in ("--url", "--creator"):
         ob.add_argument(x, required=True)
@@ -304,6 +350,11 @@ def main():
     elif a.cmd == "originality": cmd_originality(a)
     elif a.cmd == "brief": print("Brief saved:", mastermind.brief(OUT, a.topic))
     elif a.cmd == "observe": cmd_observe(a)
+    elif a.cmd == "check-url": cmd_check_url(a)
+    elif a.cmd == "forget":
+        if not a.all and not a.creator:
+            sys.exit("Say which creator, or --all")
+        cmd_forget(a)
     elif a.cmd == "scout": cmd_scout(a)
     elif a.cmd == "suggest": cmd_suggest(a)
     elif a.cmd == "approve": cmd_approve(a)

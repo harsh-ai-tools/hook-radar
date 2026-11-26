@@ -56,7 +56,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 | 🛡️ Security Guard | Checks every file, page and action *before* it happens |
 | 👮 Head of Security | Audits the Guard after every job: PASS or FAIL |
 | 🔭 Scout | Finds the right competitors for your niche (you approve) |
-| 👀 Live Watcher | Watches Reels/Shorts in your browser, view-only |
+| 👀 Live Watcher | Watches Reels/Shorts in your browser, view-only, Guard-approved pages |
 | 🧠 Mastermind | Learns why competitors grow and writes your brief |
 | 🎬 Executive Producer | Rates ideas and rejects weak ones |
 | ✍️ Scriptwriter | Writes hooks and scripts in your voice |
@@ -65,12 +65,15 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 | 📸 Instagram Manager | Captions, hashtags, covers, collabs |
 | 📈 Coach | Learns from your real results after posting |
 
-**🔒 Safe by design**
-- View-only: never downloads, uploads, likes, follows, comments or DMs
-- Only reads videos already in your `library/` folder
-- Live watching at human pace (max 30 videos / 3 hours), never on login or account pages
-- No passwords, cookies or keys saved; the Head of Security checks every run
-- Dashboard runs only on your own PC (127.0.0.1)
+**🔒 Safety & privacy**
+- **View-only:** never downloads, uploads, likes, follows, comments or DMs
+- **Your files:** only reads videos already in your `library/` folder, and never deletes them
+- **Live watching:** the Guard approves every page *before* it opens: only YouTube, Instagram and TikTok, never login or account pages, at human pace (100 videos/hour, 4 s apart; adjustable)
+- **Your data stays on your PC:** no accounts, no cloud, no tracking. The AI verdict runs on a local Ollama only, unless you add `--allow-remote-ai`
+- **Private dashboard:** a new secret link each time; other websites and other devices can't read it
+- **No secrets saved:** detects 10+ key/password/token formats; the Head of Security audits every run
+- **Other people's privacy:** emails, phone numbers, @usernames and links in pasted comments are hidden
+- **Delete anytime:** `python radar.py forget "creator"` or `python radar.py forget --all`
 
 ---
 
@@ -124,6 +127,7 @@ The first start asks for your niche, platforms and competitors. Then put videos 
 | `python radar.py scout` / `approve "name"` | Find & approve competitors |
 | `python radar.py stats-template` | Create `stats.csv` to add views (for outlier scores) |
 | `python radar.py audit` | Head of Security check |
+| `python radar.py forget "name"` / `--all` | Delete analysis data (your videos stay) |
 | `python radar.py connect` | Connect the AI team to Claude |
 
 **Options:** `--gpu` (NVIDIA, faster speech-to-text) · `--ollama qwen2.5vl:7b` (free local AI verdict via [Ollama](https://ollama.com)) · `--whisper medium` (more accurate transcripts)
