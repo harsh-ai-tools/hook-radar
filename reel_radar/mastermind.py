@@ -196,7 +196,7 @@ def comment_ideas(library, out):
     ideas = Counter()
     for f in Path(library).glob("*/comments*.txt"):
         for line in f.read_text("utf-8", errors="ignore").splitlines():
-            line = line.strip()
+            line = guard.redact(line.strip())
             if len(line) < 8:
                 continue
             if line.endswith("?") or REQ_RE.search(line):

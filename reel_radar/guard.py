@@ -21,10 +21,31 @@ WATCH_SITES = {"youtube.com", "www.youtube.com", "m.youtube.com", "instagram.com
 BLOCKED_PATH_WORDS = ("login", "accounts", "settings", "password", "direct/inbox", "checkout", "payments")
 BLOCKED_ACTIONS = {"download", "upload", "repost", "like", "follow", "unfollow", "comment",
                    "dm", "message", "login", "share", "save_to_device", "scrape_bulk"}
-LIVE_MAX_PER_SESSION = 30
-LIVE_MIN_SECONDS = 8
-SECRET_RE = re.compile(r"(AIza[0-9A-Za-z_\-]{35}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|"
-                       r"\"password\"\s*:|sessionid=|csrftoken=)", re.I)
+LIVE_PER_HOUR = 100          # defaults; change in radar.json -> "live": {"per_hour": .., "min_seconds": ..}
+LIVE_MIN_SECONDS = 4
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
+NETWORK_OK = LOCAL_HOSTS | {"www.googleapis.com", "huggingface.co", "modelscope.cn", "www.modelscope.cn"}
+SECRET_RE = re.compile(
+    r"(AIza[0-9A-Za-z_\-]{35}"                       # Google / YouTube API key
+    r"|sk-(?:proj-|ant-)?[A-Za-z0-9_\-]{20,}"         # OpenAI / Anthropic keys
+    r"|sk_live_[A-Za-z0-9]{16,}|rk_live_[A-Za-z0-9]{16,}"   # Stripe
+    r"|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}"  # GitHub
+    r"|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}"  # AWS / Slack
+    r"|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"  # JWT tokens
+    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----|Bearer\s+[A-Za-z0-9._\-]{20,}"
+    r"|\"?(?:password|passwd|api_key|apikey|secret|access_token)\"?\s*[:=]\s*\"?[^\s\",]{6,}"
+    r"|sessionid=|csrftoken=|ds_user_id=)", re.I)
+PII_RE = [(re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+"), "[email]"),
+          (re.compile(r"(?<!\d)(?:\+?\d[\d\s-]{8,}\d)(?!\d)"), "[phone]"),
+          (re.compile(r"(?<![\w])@[A-Za-z0-9_.]{2,30}"), "@[user]"),
+          (re.compile(r"https?://\S+"), "[link]")]
+
+
+def redact(text):
+    """Hide other people's emails, phone numbers, @usernames and links."""
+    for rx, rep in PII_RE:
+        text = rx.sub(rep, text)
+    return text
 
 SESSION = OUT / "live_session.json"
 
@@ -71,6 +92,18 @@ def check_url(url):
     return _log("url", url, True, "ok")
 
 
+def was_approved(url, within=900):
+    """True if the Guard approved this exact URL (and pace) in the last `within` seconds."""
+    if not LOG.exists():
+        return False
+    now, ok = time.time(), False
+    for l in LOG.read_text("utf-8").splitlines()[-500:]:
+        r = json.loads(l)
+        if r["kind"] == "url" and r["target"] == url and r["ok"] and now - r["t"] <= within:
+            ok = True
+    return ok
+
+
 def check_action(action):
     a = action.lower().strip()
     if a in BLOCKED_ACTIONS:
@@ -78,15 +111,27 @@ def check_action(action):
     return _log("action", a, True, "ok")
 
 
+def _live_limits():
+    try:
+        cfg = json.loads((ROOT / "radar.json").read_text("utf-8")).get("live", {})
+    except Exception:
+        cfg = {}
+    per_hour = max(1, min(int(cfg.get("per_hour", LIVE_PER_HOUR)), 300))       # hard cap 300/h
+    gap = max(2.0, float(cfg.get("min_seconds", LIVE_MIN_SECONDS)))          # never faster than 2s
+    return per_hour, gap
+
+
 def check_live_pace():
-    """Human pace for live watching: max 30 videos per 3 hours, 8s apart (kept on disk)."""
+    """Human pace for live watching (default 100 videos/hour, 4s apart). Kept on disk."""
+    per_hour, gap = _live_limits()
     now = time.time()
     seen = json.loads(SESSION.read_text("utf-8")) if SESSION.exists() else []
-    seen = [t for t in seen if now - t < 3 * 3600]
-    if len(seen) >= LIVE_MAX_PER_SESSION:
-        return _log("pace", len(seen), False, f"limit of {LIVE_MAX_PER_SESSION} videos per 3 hours reached: take a break")
-    if seen and now - seen[-1] < LIVE_MIN_SECONDS:
-        return _log("pace", round(now - seen[-1], 1), False, f"too fast: wait {LIVE_MIN_SECONDS}s between videos")
+    seen = [t for t in seen if now - t < 3600]
+    if len(seen) >= per_hour:
+        wait = int(3600 - (now - seen[0])) // 60 + 1
+        return _log("pace", len(seen), False, f"{per_hour} videos this hour: short break, {wait} min")
+    if seen and now - seen[-1] < gap:
+        return _log("pace", round(now - seen[-1], 1), False, f"too fast: wait {gap:g}s between videos")
     OUT.mkdir(parents=True, exist_ok=True)
     SESSION.write_text(json.dumps(seen + [now]), "utf-8")
     return _log("pace", len(seen) + 1, True, "ok")
@@ -119,9 +164,19 @@ def check_originality(script, transcripts, limit=0.25):
 
 
 def log_network(host, purpose):
-    local = host in ("127.0.0.1", "localhost", "::1")
-    return _log("network", host, local or host in ("www.googleapis.com",),
-                f"{purpose}" if local or host == "www.googleapis.com" else "unexpected network host")
+    ok = host in NETWORK_OK
+    return _log("network", host, ok, purpose if ok else "unexpected network host")
+
+
+def check_ai_host(url, allow_remote=False):
+    """The local AI (Ollama) must run on THIS computer unless the user explicitly allows otherwise."""
+    h = urlparse(url).hostname
+    if h in LOCAL_HOSTS:
+        return _log("ai_host", url, True, "local AI on this PC")
+    if allow_remote:
+        return _log("ai_host", url, True, "remote AI allowed by user flag")
+    return _log("ai_host", url, False, "AI host is not this PC: frames and transcripts would leave your computer "
+                                        "(use --allow-remote-ai only if you trust that server)")
 
 
 # ------------------------------------------------------------------ Head of Security
@@ -148,6 +203,17 @@ def head_audit(since=0.0):
             findings.append(f"Blocked action was allowed: {r['target']}")
         if r["kind"] == "network" and not r["ok"]:
             findings.append(f"Unexpected network use: {r['target']}")
+        if r["kind"] in ("url", "pace", "ai_host") and r["ok"] is False:
+            pass  # blocked = Guard working
+    # 1b. every live observation must have an approved URL + pace check right before it
+    obs = OUT / "observations.jsonl"
+    if obs.exists():
+        ok_urls = {r["target"] for r in recs if r["kind"] == "url" and r["ok"]}
+        for l in obs.read_text("utf-8").splitlines():
+            if l.strip():
+                o = json.loads(l)
+                if o.get("t", 0) >= since and o.get("url") not in ok_urls:
+                    findings.append(f"Live page not approved by Guard: {o.get('url')}")
     # 3. No video files outside library/ (we never download)
     for p in OUT.rglob("*"):
         if p.suffix.lower() in VIDEO_EXT:

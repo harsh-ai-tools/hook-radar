@@ -5,11 +5,13 @@ Ears  = transcript with word timing, loudness curve, silences, music bed, energy
 Brain = fixed-schema analysis (+ optional local AI verdict via Ollama)
 Made by Harsh Rajput · MIT
 """
-import base64, json, re, shutil, subprocess, urllib.request
+import base64, json, os, re, shutil, subprocess, urllib.request
+os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")   # privacy: no usage pings
+os.environ.setdefault("DO_NOT_TRACK", "1")
 from pathlib import Path
 from statistics import median
 
-from . import live
+from . import guard, live
 
 HOOK_TIMES = [0.0, 0.5, 1.0, 2.0, 3.0]
 MAX_FRAMES = 24
@@ -124,6 +126,7 @@ def ocr(frames):
         import logging
         for name in ("RapidOCR", "rapidocr"):
             logging.getLogger(name).setLevel(logging.ERROR)
+        guard.log_network("modelscope.cn", "one-time OCR model download/check")
         _ocr = RapidOCR()
         for name in ("RapidOCR", "rapidocr"):
             logging.getLogger(name).setLevel(logging.ERROR)
@@ -147,6 +150,7 @@ def transcribe(video, size, gpu=False, language=None):
     global _wm
     from faster_whisper import WhisperModel
     if _wm is None:
+        guard.log_network("huggingface.co", f"one-time speech model download/check (whisper {size})")
         if gpu:
             try:
                 _wm = WhisperModel(size, device="cuda", compute_type="float16")
@@ -323,7 +327,9 @@ def analyse(video, creator, platform, out, opts):
         "ctas": ctas(tr["text"], " ".join(o["text"] for o in ocr_lines)),
         "stats": opts.stats.get(video.name, {}),
     }
-    if opts.ollama and sheet:
+    if opts.ollama and sheet and not guard.check_ai_host(opts.ollama_host, getattr(opts, "allow_remote_ai", False))[0]:
+        live.log("[guard] AI verdict skipped: AI host is not this PC (use --allow-remote-ai to override)")
+    elif opts.ollama and sheet:
         try:
             study["analysis"] = ai_verdict(opts.ollama, sheet, tr, ocr_lines, m, a, opts.ollama_host)
             study["analysis_note"] = "AI draft: verify names/quotes before using."
