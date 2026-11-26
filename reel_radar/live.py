@@ -4,7 +4,7 @@ from pathlib import Path
 
 _path = Path("out/live.json")
 _state = {"status": "idle", "progress": [0, 0], "video": None, "frames": [], "log": [],
-          "analysis": None, "transcript": [], "settings": {}, "updated": 0}
+          "analysis": None, "transcript": [], "settings": {}, "history": [], "updated": 0}
 
 
 def set_out(out):
@@ -66,3 +66,9 @@ def transcript(words):
 
 def analysis(a):
     _state["analysis"] = a; _save()
+
+
+def watched(item):
+    """Add a finished video to the 'Watched so far' list."""
+    _state["history"] = ([item] + [h for h in _state["history"] if h["id"] != item["id"]])[:60]
+    _save()

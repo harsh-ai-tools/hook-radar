@@ -207,7 +207,7 @@ def silences(video, noise="-35dB", d=0.25):
     return [{"s": round(max(a, 0), 2), "e": round(b, 2)} for a, b in zip(starts, ends)]
 
 
-def _frames_db(audio, sr=16000, frame=0.05):
+def _frames_db(audio, sr=16000, frame=0.02):
     import numpy as np
     n = int(sr * frame)
     k = len(audio) // n
@@ -231,10 +231,11 @@ def ears(video, words, dur):
             speech = np.zeros(len(db), bool)
             for w in words:
                 speech |= (t >= w["s"]) & (t <= w["e"])
-            floor = np.percentile(db[span], 10) if span.any() else np.percentile(db, 10)
+            # 2nd percentile of 20 ms frames = the tiny gaps between words (silent without a music bed)
+            floor = np.percentile(db[span], 2) if span.any() else np.percentile(db, 2)
             voice_db = float(np.median(db[speech])) if speech.any() else None
         else:
-            floor = float(np.percentile(db, 10))
+            floor = float(np.percentile(db, 2))
         bed_db = float(floor)
     # music bed = a sound floor that never drops to silence under/between the words
     has_bed = bed_db is not None and bed_db > -45 and (voice_db is None or voice_db - bed_db < 30)
@@ -337,6 +338,20 @@ def ai_verdict(model, sheet, tr, ocr_lines, m, a, host):
         return json.loads(json.loads(r.read())["response"])
 
 
+def watch_item(study):
+    """Short card for the dashboard's 'Watched so far' list."""
+    a, m = study.get("audio", {}), study.get("pacing", {})
+    tags = [("talking" if study.get("words") else "no speech"), ("music" if a.get("has_music_bed") else "no music"),
+            ("captions" if study.get("captions", {}).get("present") else "no captions"),
+            ("fast cuts" if (m.get("cuts_per_10s") or 0) >= 3 else "slow cuts")]
+    if study.get("analysis", {}).get("format"):
+        tags.insert(0, study["analysis"]["format"])
+    h = study.get("hook", {})
+    return {"id": study["id"], "creator": study["creator"], "platform": study.get("platform", ""),
+            "file": study["file"], "hook": h.get("spoken_3s") or h.get("on_screen_3s") or "",
+            "duration": m.get("duration_s"), "tags": tags}
+
+
 def analyse(video, creator, platform, out, opts):
     """Analyse one local video file. Returns the full study dict."""
     video = Path(video)
@@ -384,7 +399,8 @@ def analyse(video, creator, platform, out, opts):
             live.log(f"[brain] AI verdict failed: {e}")
     (out / "study" / f"{vid}.json").write_text(json.dumps(study, ensure_ascii=False, indent=2), "utf-8")
     live.analysis({k: study[k] for k in ("hook", "pacing", "captions", "ctas")} |
-                  {"audio": {k: v for k, v in a.items() if k != "curve"}} |
+                  {"audio": {k: v for k, v in a.items() if k != "curve"}, "curve": a.get("curve", [])[:400]} |
                   ({"analysis": study["analysis"]} if "analysis" in study else {}))
+    live.watched(watch_item(study))
     live.log(f"[done] wrote study/{vid}.json")
     return study
