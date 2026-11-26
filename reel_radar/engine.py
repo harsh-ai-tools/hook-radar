@@ -121,7 +121,12 @@ def ocr(frames):
             except ImportError:
                 live.log("[eyes] OCR not installed, skipping on-screen text")
                 return []
+        import logging
+        for name in ("RapidOCR", "rapidocr"):
+            logging.getLogger(name).setLevel(logging.ERROR)
         _ocr = RapidOCR()
+        for name in ("RapidOCR", "rapidocr"):
+            logging.getLogger(name).setLevel(logging.ERROR)
     from PIL import Image
     seen, out = set(), []
     for t, f in frames:

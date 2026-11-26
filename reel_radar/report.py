@@ -23,8 +23,9 @@ def get(d, path):
     return d
 
 
-def load_studies(out):
-    return [json.loads(p.read_text("utf-8")) for p in sorted((out / "study").glob("*.json"))]
+def load_studies(out, include_drafts=False):
+    ss = [json.loads(p.read_text("utf-8")) for p in sorted((Path(out) / "study").glob("*.json"))]
+    return ss if include_drafts else [s for s in ss if not s.get("creator", "").startswith("_")]
 
 
 def outliers(studies):

@@ -22,7 +22,8 @@ small{color:var(--dim)}
 </style></head><body>
 <div class="grid">
  <div class="p player"><h3>NOW WATCHING · <b id="who">—</b></h3>
-  <video id="vid" muted autoplay loop playsinline></video>
+  <video id="vid" muted autoplay loop playsinline onerror="this.style.display='none';document.getElementById('sheet').style.display='block'"></video>
+  <img id="sheet" style="display:none;width:100%;border-radius:8px" alt="contact sheet">
   <div style="margin-top:8px"><small id="file"></small></div>
   <h3 style="margin-top:12px">TRANSCRIPT</h3><div class="tr" id="tr"></div></div>
  <div class="p top"><span class="pill idle" id="st">IDLE</span>
@@ -58,7 +59,8 @@ async function tick(){try{
  if(s.settings.brain)$('brain').textContent=s.settings.brain;
  $('meta').textContent=s.settings.device||'';
  if(s.video){$('who').textContent=s.video.creator+' · '+s.video.platform;$('file').textContent=s.video.file;
-  if(lastVid!==s.video.id){lastVid=s.video.id;$('vid').src='/file?p='+encodeURIComponent(s.video.file);}}
+  if(lastVid!==s.video.id){lastVid=s.video.id;$('vid').style.display='block';$('sheet').style.display='none';
+   $('vid').src='/file?p='+encodeURIComponent(s.video.file);$('sheet').src='out/study/'+s.video.id+'/contact_sheet.jpg?'+Date.now();}}
  $('fmeta').textContent=s.video?s.video.id+' · '+s.frames.length+' frames':'—';
  $('strip').innerHTML=s.frames.map(f=>`<div class="fr"><img src="${f.src}"><b class="ok">ok</b><span>${f.t.toFixed(1)}s</span></div>`).join('');
  $('log').innerHTML=s.log.map(l=>{const [t,...r]=l.split(' ');let x=r.join(' ');
