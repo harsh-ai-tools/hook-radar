@@ -1,7 +1,23 @@
+<p align="center"><img src="docs/banner.png" alt="Reel Radar" width="100%"></p>
+
 <h1 align="center">📡 Reel Radar</h1>
 <p align="center"><b>Free, local AI that studies your competitors' Shorts, Reels & TikToks and shows you exactly what to improve.</b><br>
 Runs 100% on your PC · never downloads videos · no paid APIs</p>
 <p align="center"><i>Made by Harsh Rajput · MIT License</i></p>
+
+---
+
+## ⚙️ How it works
+<p align="center"><img src="docs/how-it-works.png" alt="How Reel Radar works" width="100%"></p>
+
+## 📸 See it in action
+**Live dashboard**: watch the AI see, hear and grade each video in real time
+<p align="center"><img src="docs/dashboard.png" alt="Live dashboard" width="100%"></p>
+
+**Playbook**: You vs Them, creator profiles and every video in one page
+<p align="center"><img src="docs/playbook.png" alt="Playbook report" width="100%"></p>
+
+<sub>Screenshots use demo videos generated for testing.</sub>
 
 ---
 
