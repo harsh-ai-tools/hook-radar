@@ -17,7 +17,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 **Playbook**: You vs Them, creator profiles and every video in one page
 <p align="center"><img src="docs/playbook.png" alt="Playbook report" width="100%"></p>
 
-<sub>Dashboard: Claude watching a public YouTube Short in Live mode (the video plays in the official embed). Playbook: demo videos generated for testing.</sub>
+<sub>Dashboard: Claude watching one of our own HISTORICAL Shorts live (official embed, view-only). Playbook: demo videos generated for testing.</sub>
 
 ---
 
