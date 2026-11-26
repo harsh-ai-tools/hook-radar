@@ -30,7 +30,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 - **Visual hook**: does the picture change in the first second? Is there text on frame 0?
 
 **👂 Ears: what it hears**
-- **Transcript**: every word with its exact time, in your language
+- **Transcript**: every word with its exact time, in your language (tested with English, Hindi and Punjabi; Punjabi comes out in Gurmukhi)
 - **Spoken hook**: exactly what's said in the first 3 seconds
 - **Voice pace**: words per minute, time to first word, energy changes
 - **Sound design**: music bed, voice-over-music level, silences, audio drops (re-hooks)
@@ -43,6 +43,10 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 - **Comment ideas**: viewer questions turned into video ideas
 - **Next-video brief**: targets, hook formulas, structure and sound plan
 
+**📈 Retention & 🖼️ thumbnails**
+- **Retention import**: drop in a YouTube Studio *Audience retention* export (CSV or the .zip). See your 3-second hold, the biggest drops, what was said or shown at each drop, and rewatch spikes
+- **Thumbnail check**: contrast, colour, clutter, text amount and whether the text is still readable at phone size, with fixes and You vs Them
+
 **✅ Create better**
 - **Pre-post check**: grade your draft 0–100 against winning videos, with exact fixes
 - **Originality check**: stops scripts that copy a competitor word for word
@@ -52,18 +56,20 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 **🤖 AI team (for Claude)**
 | Member | Job |
 |---|---|
-| 🧭 Manager | Splits your request and hands work to the right member |
-| 🛡️ Security Guard | Checks every file, page and action *before* it happens |
-| 👮 Head of Security | Audits the Guard after every job: PASS or FAIL |
+| 🧭 Manager (`radar`) | You type plain English; it loads only the one member needed and judges ideas (go / no-go) |
+| 🚀 Setup (`radar-setup`) | Type **start**: 3 questions, opens your video folder, runs the first analysis |
+| ✅ Pre-post check (`radar-check`) | Grades a draft video, script or thumbnail before you post |
 | 🔭 Scout | Finds the right competitors for your niche (you approve) |
-| 👀 Live Watcher | Watches Reels/Shorts in your browser, view-only, Guard-approved pages |
+| 👀 Live Watcher | Watches Reels/Shorts in your browser, view-only |
 | 🧠 Mastermind | Learns why competitors grow and writes your brief |
-| 🎬 Executive Producer | Rates ideas and rejects weak ones |
 | ✍️ Scriptwriter | Writes hooks and scripts in your voice |
 | ✂️ Video Editor | Timecoded edit plan: cuts, captions, sound |
 | ▶️ YouTube Manager | Titles, descriptions, hashtags, thumbnails |
 | 📸 Instagram Manager | Captions, hashtags, covers, collabs |
 | 📈 Coach | Learns from your real results after posting |
+| 🛡️ Security Hook | Not an AI: local code that blocks downloads, login pages and unsafe sites *before* they happen, 0 tokens. `radar.py audit` gives PASS / FAIL |
+
+**Token-light:** all video maths runs in local Python. Claude only reads a one-line-per-video `out/summary.json`, and unchanged videos are never re-analysed.
 
 **🔒 Safety & privacy**
 - **View-only:** never downloads, uploads, likes, follows, comments or DMs
@@ -71,52 +77,38 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 - **Live watching:** the Guard approves every page *before* it opens: only YouTube, Instagram and TikTok, never login or account pages, at human pace (100 videos/hour, 4 s apart; adjustable)
 - **Your data stays on your PC:** no accounts, no cloud, no tracking. The AI verdict runs on a local Ollama only, unless you add `--allow-remote-ai`
 - **Private dashboard:** a new secret link each time; other websites and other devices can't read it
-- **No secrets saved:** detects 10+ key/password/token formats; the Head of Security audits every run
+- **No secrets saved:** detects 10+ key/password/token formats; `radar.py audit` checks every run
 - **Other people's privacy:** emails, phone numbers, @usernames and links in pasted comments are hidden
 - **Delete anytime:** `python radar.py forget "creator"` or `python radar.py forget --all`
 
 ---
 
-## 📥 How to download
-Pick any one way. **Way 1 is the easiest.**
+## 🚀 Quick start (3 steps, no coding)
+**Needs:** Windows 10/11 or a Mac · about 2 GB free space · no GPU needed · [Claude](https://claude.ai/download) for the AI team
 
-**Way 1: Download ZIP (no GitHub account needed)**
-1. On this page, click the green **`<> Code`** button
-2. Click **Download ZIP**
-3. Right-click the downloaded file → **Extract All**
-4. Open the extracted folder → done ✅
+1. **Download:** click the green **`<> Code`** button above → **Download ZIP** → right-click the file → **Extract All**.
+2. **Install:** open the folder and double-click **`INSTALL_WINDOWS.bat`** (Windows) or **`INSTALL_MAC.command`** (Mac). It installs Python and ffmpeg if missing (asks first).
+   > Windows says "protected your PC"? Click **More info → Run anyway**. Mac says "can't be opened"? **Right-click → Open → Open**.
+3. **Start:** double-click **`START_DASHBOARD.bat`** (Windows) or **`START_DASHBOARD.command`** (Mac). Put videos **you already have** in `library/me/` (yours) and `library/<their name>/` (competitors).
 
-**Way 2: GitHub Desktop (easy updates later)**
-1. Install [GitHub Desktop](https://desktop.github.com)
-2. Click the green **`<> Code`** button → **Open with GitHub Desktop**
-3. Choose a folder → **Clone**. To update later, click **Fetch origin**
+Just want to see it work? Run `python radar.py demo` (15-second sample run, opens the dashboard).
 
-**Way 3: Command line (for developers)**
-```bash
-git clone https://github.com/harsh-ai-tools/reel-radar.git
-cd reel-radar
-```
+**Claude Code plugin:** `/plugin marketplace add harsh-ai-tools/reel-radar` then `/plugin install reel-radar@harsh-ai-tools`.
+Developers: `git clone https://github.com/harsh-ai-tools/reel-radar.git`.
 
-**Way 4: Claude Code plugin**
-```
-/plugin marketplace add harsh-ai-tools/reel-radar
-/plugin install reel-radar@harsh-ai-tools
-```
-
----
-
-## 🚀 Install & start (one click)
-**Windows:** double-click **`install.bat`**. It installs Python and ffmpeg if missing (it asks first), sets everything up, and connects the AI team to Claude. Then double-click **`Reel Radar.bat`**.
-
-**Mac / Linux:** run `./install.sh`, then `./reel-radar.sh`.
-
-The first start asks for your niche, platforms and competitors. Then put videos **you already have** into:
-- your own → `library/me/`
-- each competitor's → `library/<their name>/`
+## 💬 What to type in Claude
+Open Claude in the Reel Radar folder and type:
+- **`start`** (first time: setup wizard)
+- *"Analyse my videos and my competitors"*
+- *"Why is @creator growing? Give me my next video idea"*
+- *"Write the script for that idea"*
+- *"Check my draft before I post"*
 
 ## 🧰 Commands
 | Command | What it does |
 |---|---|
+| `python radar.py doctor` | Health check with one-line fixes |
+| `python radar.py demo` | 15-second sample run |
 | `python radar.py init` | Set niche, language, platforms, competitors |
 | `python radar.py watch` | Analyse new videos with the live dashboard |
 | `python radar.py brief "topic"` | Next-video brief from winning videos |
@@ -125,28 +117,29 @@ The first start asks for your niche, platforms and competitors. Then put videos 
 | `python radar.py trends` / `ideas` / `patterns` | Trends, comment ideas, what winners do |
 | `python radar.py weekly` | Everything in one weekly report |
 | `python radar.py scout` / `approve "name"` | Find & approve competitors |
+| `python radar.py retention export.zip --video library/me/x.mp4` | Where viewers leave and why (YouTube Studio export) |
+| `python radar.py thumbs` | Score thumbnails in `library/<creator>/thumbnails/` |
 | `python radar.py stats-template` | Create `stats.csv` to add views (for outlier scores) |
-| `python radar.py audit` | Head of Security check |
+| `python radar.py audit` | Security check: PASS / FAIL |
 | `python radar.py forget "name"` / `--all` | Delete analysis data (your videos stay) |
-| `python radar.py connect` | Connect the AI team to Claude |
 
-**Options:** `--gpu` (NVIDIA, faster speech-to-text) · `--ollama qwen2.5vl:7b` (free local AI verdict via [Ollama](https://ollama.com)) · `--whisper medium` (more accurate transcripts)
+**Options:** `--gpu` (NVIDIA, faster speech-to-text) · `--ollama qwen2.5vl:3b` (free local AI verdict via [Ollama](https://ollama.com)) · `--whisper base` (faster on slow laptops) / `medium` (more accurate)
 
-## 💬 Use it with Claude
-After install, just ask Claude:
-- *"Reel Radar, find my competitors"*
-- *"Watch my library and tell me why history_hub is growing"*
-- *"Watch @creator's Reels live in my browser"*
-- *"Write my next video about the fall of Rome"*
-- *"Precheck my draft before I post"*
+## 🩺 Troubleshooting
+- **Anything wrong?** Run `python radar.py doctor` (or ask Claude "run doctor") and follow the ❌ line.
+- **"ffmpeg is missing"** → run the installer again and say **yes** to ffmpeg.
+- **Slow on an old laptop** → add `--whisper base`. No GPU needed.
+- **Dashboard didn't open** → it picks the next free port by itself; copy the link printed in the window.
+- **No on-screen text found** → OCR is optional; Claude reads the text from the contact sheets instead.
+- Still stuck? [Open a bug report](https://github.com/harsh-ai-tools/reel-radar/issues/new?template=bug_report.md) with your `doctor` output.
 
 ## 🗺️ Roadmap
 - [x] Eyes, ears, live dashboard, You vs Them
-- [x] AI team with Security Guard + Head of Security
+- [x] AI team with a 0-token Security Hook
 - [x] Mastermind: patterns, briefs, trends, comment ideas, weekly report
 - [x] Pre-post check and originality check
 - [x] One-click installer + Claude plugin
-- [ ] Retention-curve import from YouTube Studio exports
-- [ ] Thumbnail analysis for long-form videos
+- [x] Retention-curve import from YouTube Studio exports
+- [x] Thumbnail analysis (contrast, clutter, text, phone-size legibility)
 
 > ⚠️ For study only. Don't re-upload other creators' videos or copy their scripts. AI output is a draft: verify facts before posting.

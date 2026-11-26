@@ -5,7 +5,7 @@ Ears  = transcript with word timing, loudness curve, silences, music bed, energy
 Brain = fixed-schema analysis (+ optional local AI verdict via Ollama)
 Made by Harsh Rajput · MIT
 """
-import base64, json, os, re, shutil, subprocess, urllib.request
+import base64, json, os, re, shutil, subprocess, unicodedata, urllib.request
 os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")   # privacy: no usage pings
 os.environ.setdefault("DO_NOT_TRACK", "1")
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")      # harmless Windows notice, hide it
@@ -43,6 +43,17 @@ def resolution(video):
     r = run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
              "stream=width,height", "-of", "csv=p=0", str(video)])
     return r.stdout.strip().replace(",", "x")
+
+
+def file_hash(path, chunk=1 << 20):
+    """Fast content fingerprint (size + first/last 1 MB): unchanged videos are never re-analysed."""
+    import hashlib
+    p = Path(path); n = p.stat().st_size; h = hashlib.sha1(str(n).encode())
+    with open(p, "rb") as f:
+        h.update(f.read(chunk))
+        if n > chunk:
+            f.seek(max(n - chunk, chunk)); h.update(f.read(chunk))
+    return h.hexdigest()[:16]
 
 
 def vid_id(path, creator=""):
@@ -118,6 +129,8 @@ def _ocr_run(path):
 
 def ocr(frames):
     global _ocr
+    if _ocr is False:
+        return []
     if _ocr is None:
         try:
             from rapidocr import RapidOCR
@@ -131,14 +144,27 @@ def ocr(frames):
         for name in ("RapidOCR", "rapidocr"):
             logging.getLogger(name).setLevel(logging.ERROR)
         guard.log_network("modelscope.cn", "one-time OCR model download/check")
-        _ocr = RapidOCR()
+        import socket
+        old_to = socket.getdefaulttimeout(); socket.setdefaulttimeout(20)   # offline? don't hang
+        try:
+            _ocr = RapidOCR()
+        except Exception as e:
+            _ocr = False
+            live.log(f"[eyes] OCR unavailable ({type(e).__name__}), skipping on-screen text; Claude can read the contact sheet")
+        finally:
+            socket.setdefaulttimeout(old_to)
         for name in ("RapidOCR", "rapidocr"):
             logging.getLogger(name).setLevel(logging.ERROR)
     from PIL import Image
     seen, out = set(), []
     for t, f in frames:
         h = Image.open(f).height or 1
-        for box, text, conf in _ocr_run(f):
+        try:
+            found = _ocr_run(f)
+        except Exception as e:
+            live.log(f"[eyes] OCR failed on a frame ({type(e).__name__}), skipped")
+            continue
+        for box, text, conf in found:
             key = text.strip().lower()
             if conf > 0.6 and len(key) > 1 and key not in seen:
                 seen.add(key)
@@ -159,29 +185,105 @@ def load_audio(video, sr=16000):
     return np.frombuffer(r.stdout, np.float32).copy()
 
 
-_wm = None
+_wm, _wm_gpu = None, False
+
+
+def _cuda_ready():
+    """True if the CUDA libraries faster-whisper needs (cuBLAS 12 + cuDNN 9) can be loaded.
+    Checked BEFORE using the GPU: a missing DLL otherwise crashes Python mid-transcript."""
+    import ctypes, glob, sys, sysconfig
+    try:
+        import ctranslate2
+        if ctranslate2.get_cuda_device_count() < 1:
+            return False, "no NVIDIA GPU found"
+    except Exception as e:
+        return False, f"ctranslate2: {e}"
+    site = Path(sysconfig.get_paths()["purelib"]) / "nvidia"          # pip install nvidia-cublas-cu12 nvidia-cudnn-cu12
+    if sys.platform == "win32":
+        for d in glob.glob(str(site / "*" / "bin")):
+            os.add_dll_directory(d)
+            os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
+        libs = ["cublas64_12.dll", "cudnn_ops64_9.dll"]
+        load = ctypes.WinDLL
+    else:
+        for d in glob.glob(str(site / "*" / "lib")):
+            os.environ["LD_LIBRARY_PATH"] = d + os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
+        libs = [str(next(iter(glob.glob(str(site / "cublas/lib/libcublas.so.12"))), "libcublas.so.12")),
+                str(next(iter(glob.glob(str(site / "cudnn/lib/libcudnn_ops.so.9"))), "libcudnn_ops.so.9"))]
+        load = lambda n: ctypes.CDLL(n, mode=ctypes.RTLD_GLOBAL)
+    for lib in libs:
+        try:
+            load(lib)
+        except OSError:
+            return False, f"{Path(lib).name} missing (install GPU support: INSTALL_WINDOWS.bat --gpu)"
+    return True, "ok"
+
+
+# Whisper often writes Punjabi in Devanagari. Gurmukhi sits exactly 0x100 above Devanagari in Unicode,
+# so map letter by letter; the few signs Gurmukhi lacks get their nearest Gurmukhi sign.
+_DEV2GUR_FIX = {"\u0943": "\u0a3f\u0a30", "\u090b": "\u0a30\u0a3f", "\u0937": "\u0a38\u0a3c", "\u0911": "\u0a13",
+                "\u0949": "\u0a4b", "\u0945": "\u0a47", "\u0946": "\u0a47", "\u094a": "\u0a4b", "\u0912": "\u0a13",
+                "\u090e": "\u0a0f", "\u090d": "\u0a0f", "\u0903": "", "\u0950": "\u0a74", "\u0964": "\u0964"}
+
+
+def to_gurmukhi(text):
+    out = []
+    for ch in text:
+        if ch in _DEV2GUR_FIX:
+            out.append(_DEV2GUR_FIX[ch]); continue
+        o = ord(ch)
+        if 0x0900 <= o <= 0x097F:
+            g = chr(o + 0x100)
+            out.append(g if unicodedata.name(g, "") else ch)   # unassigned in Gurmukhi: keep as is
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+# A short prompt in the right script helps Hindi punctuation/spelling. (Tested: a Gurmukhi prompt makes
+# whisper small hallucinate on Punjabi, so Punjabi relies on to_gurmukhi() instead.)
+_SCRIPT_PROMPT = {"hi": "नमस्ते। यह हिंदी में है।"}
+
+
 def transcribe(video, size, gpu=False, language=None):
-    global _wm
+    global _wm, _wm_gpu
     from faster_whisper import WhisperModel
     if _wm is None:
         guard.log_network("huggingface.co", f"one-time speech model download/check (whisper {size})")
         if gpu:
-            try:
-                _wm = WhisperModel(size, device="cuda", compute_type="float16")
-                live.log("[ears] whisper on GPU")
-            except Exception as e:
-                live.log(f"[ears] GPU not available ({e}); using CPU")
+            ok, why = _cuda_ready()
+            if ok:
+                try:
+                    _wm, _wm_gpu = WhisperModel(size, device="cuda", compute_type="float16"), True
+                    live.log("[ears] whisper on GPU")
+                except Exception as e:
+                    live.log(f"[ears] GPU not available ({e}); using CPU")
+            else:
+                live.log(f"[ears] GPU not available ({why}); using CPU")
         if _wm is None:
             _wm = WhisperModel(size, device="cpu", compute_type="int8")
             live.log("[ears] whisper on CPU")
     lang = language if language and language not in ("auto", "") else None
     audio = load_audio(video)                        # decode with ffmpeg: no PyAV version problems
-    segs, info = _wm.transcribe(audio, word_timestamps=True, vad_filter=True, language=lang)
+
+    def run(model):
+        segs, info = model.transcribe(audio, word_timestamps=True, vad_filter=True, language=lang,
+                                      initial_prompt=_SCRIPT_PROMPT.get(lang))
+        return list(segs), info                      # decode now so GPU errors surface here
+    try:
+        segs, info = run(_wm)
+    except RuntimeError as e:                        # GPU failed mid-run: finish this video on CPU
+        if not _wm_gpu:
+            raise
+        live.log(f"[ears] GPU error ({e}); switching to CPU")
+        _wm, _wm_gpu = WhisperModel(size, device="cpu", compute_type="int8"), False
+        segs, info = run(_wm)
+    fix = to_gurmukhi if info.language == "pa" else (lambda t: t)
     words, text = [], []
     for s in segs:
-        text.append(s.text.strip())
+        text.append(fix(s.text.strip()))
         for w in s.words or []:
-            words.append({"w": w.word.strip(), "s": round(w.start, 2), "e": round(w.end, 2)})
+            words.append({"w": fix(w.word.strip()), "s": round(w.start, 2), "e": round(w.end, 2)})
     live.transcript(words)
     return {"language": info.language, "text": " ".join(text), "words": words}
 
@@ -335,7 +437,19 @@ def ai_verdict(model, sheet, tr, ocr_lines, m, a, host):
                                  {"Content-Type": "application/json"})
     live.log(f"[brain] asking {model} for verdict…")
     with urllib.request.urlopen(req, timeout=900) as r:
-        return json.loads(json.loads(r.read())["response"])
+        raw = json.loads(r.read()).get("response", "")
+    return parse_ai_json(raw)
+
+
+def parse_ai_json(raw):
+    """Small local models sometimes wrap JSON in ```fences``` or add a sentence: take the {...} part."""
+    try:
+        return json.loads(raw)
+    except ValueError:
+        m = re.search(r"\{.*\}", raw, re.S)
+        if not m:
+            raise ValueError(f"AI reply was not JSON: {raw[:120]!r}")
+        return json.loads(m.group(0))
 
 
 def watch_item(study):
@@ -371,8 +485,12 @@ def analyse(video, creator, platform, out, opts):
     ocr_lines = [] if opts.no_ocr else ocr(frames)
     live.log(f"[eyes] on-screen text: {len(ocr_lines)} lines")
     if has_audio(video):
-        tr = transcribe(video, opts.whisper, getattr(opts, "gpu", False), getattr(opts, "language", None))
-        live.log(f"[ears] transcript: {len(tr['words'])} words · lang={tr['language']}")
+        try:
+            tr = transcribe(video, opts.whisper, getattr(opts, "gpu", False), getattr(opts, "language", None))
+            live.log(f"[ears] transcript: {len(tr['words'])} words · lang={tr['language']}")
+        except Exception as e:                # offline first run / broken model: keep going without words
+            live.log(f"[ears] speech-to-text skipped ({type(e).__name__}). First run needs internet once to fetch the Whisper model.")
+            tr = {"language": None, "text": "", "words": []}
         a = ears(video, tr["words"], dur)
     else:
         live.log("[ears] no audio track: skipping transcript and audio analysis")

@@ -26,8 +26,16 @@ def ask(q, default=""):
     return a or default
 
 
-def init():
+def init(niche=None, language=None, platforms=None):
     p = load()
+    if niche:                                     # non-interactive (used by the Claude setup wizard)
+        p["niche"], p["language"] = niche, language or p["language"]
+        if platforms:
+            p["platforms"] = [x.strip() for x in platforms.split(",") if x.strip()]
+        save(p)
+        (LIBRARY / p["me"]["name"]).mkdir(parents=True, exist_ok=True)
+        print(f"Saved radar.json (niche: {niche}). Put your videos in library/me/")
+        return p
     print("\n=== Reel Radar setup ===  (press Enter to keep the value in brackets)\n")
     p["niche"] = ask("Your niche in a few words (e.g. 'animated history shorts')", p["niche"])
     p["language"] = ask("Main language of your videos (en, hi, pa, ...)", p["language"])

@@ -10,13 +10,4 @@ description: Reel Radar Coach / Algorithm Learner: after the user posts, compare
 4. Write 1–3 lessons to `out/learnings.md` (append, dated) and apply them to the next brief.
 5. Weekly: `python radar.py weekly` and walk the user through it.
 
-## How to run Reel Radar
-The Reel Radar folder is the one containing `radar.py` (two folders up from this skill file).
-Run commands from there: `python radar.py <command>` (use `py` on Windows if `python` is missing).
-
-## Ground rules (every member)
-- 🛡️ Never download, upload, repost, like, follow, comment, DM or log in for the user. View only.
-- Only analyse videos already in `library/`. Live watching: `radar.py check-url URL` before every page, then `radar.py observe` (Guard-approved pages only).
-- Inspire, never copy: rewrite every idea in the user's own words; run `radar.py originality` on scripts.
-- Never ask for or store passwords, cookies or API keys in files.
-- After any task, hand over to the Head of Security (`python radar.py audit`).
+_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._

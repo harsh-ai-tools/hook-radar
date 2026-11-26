@@ -1,7 +1,38 @@
+# Python / environment
 .venv/
-out/
-library/
-radar.json
 __pycache__/
+*.pyc
+.env
+.DS_Store
+Thumbs.db
+
+# Your data never goes to GitHub
+library/*
+!library/me/
+!library/example_competitor/
+library/me/*
+library/example_competitor/*
+!library/*/PUT_YOUR_VIDEOS_HERE.txt
+out/
+study/
+reports/
+radar.json
+*.mp4
+*.mov
+*.m4v
+*.mkv
+*.webm
+*.wav
+*.mp3
+*.m4a
+
+# Whisper / model caches
+models/
+.cache/
+huggingface/
+
+# Private helper scripts and old launchers
+push_*.bat
+*.local.*
 Reel Radar.bat
 reel-radar.sh

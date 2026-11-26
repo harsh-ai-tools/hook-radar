@@ -34,14 +34,25 @@ echo [3/4] Installing Reel Radar packages (first time takes a few minutes)...
 %PY% -m venv .venv || ( echo Could not create virtual environment & pause & exit /b 1 )
 call .venv\Scripts\python -m pip install --upgrade pip >nul
 call .venv\Scripts\python -m pip install -r requirements.txt || ( echo Package install failed & pause & exit /b 1 )
+set GPUFLAG=
+if exist .venv\gpu.flag del .venv\gpu.flag
+where nvidia-smi >nul 2>nul
+if not errorlevel 1 (
+  if /I "%~1"=="--gpu" ( set WANTGPU=1 ) else (
+    choice /M "NVIDIA GPU found. Install GPU speed-up for speech-to-text (about 1 GB download)"
+    if not errorlevel 2 set WANTGPU=1
+  )
+)
+if defined WANTGPU (
+  echo Installing GPU speed-up...
+  call .venv\Scripts\python -m pip install -r requirements-gpu.txt && set "GPUFLAG= --gpu" || echo GPU speed-up failed: Reel Radar will use the CPU.
+)
 echo [4/4] Connecting the AI team to Claude...
 call .venv\Scripts\python radar.py connect
-> "Reel Radar.bat" echo @echo off
->> "Reel Radar.bat" echo cd /d "%%~dp0"
->> "Reel Radar.bat" echo if not exist radar.json ( .venv\Scripts\python radar.py init )
->> "Reel Radar.bat" echo .venv\Scripts\python radar.py watch %%*
->> "Reel Radar.bat" echo pause
+if not exist library\me mkdir library\me
+if defined WANTGPU if "%GPUFLAG%"==" --gpu" ( echo gpu> .venv\gpu.flag )
+call .venv\Scripts\python radar.py doctor
 echo.
-echo  Done! Double-click "Reel Radar.bat" to start.
-echo  Put videos you already have in library\me (yours) and library\^<creator^> (competitors).
+echo  Done! Double-click START_DASHBOARD.bat to start.
+echo  Put your videos in library\me and competitors' videos in library\^<their name^>.
 pause

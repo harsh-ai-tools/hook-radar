@@ -1,0 +1,1 @@
+Drop video files here (one competitor's videos; rename this folder to their name). Reel Radar only reads videos already on your PC; it never downloads anything.

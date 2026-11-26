@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|.*navigate.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "P=$(command -v python || command -v python3); \"$P\" \"${CLAUDE_PLUGIN_ROOT}/hooks/guard_hook.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

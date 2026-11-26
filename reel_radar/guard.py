@@ -16,8 +16,8 @@ LOG = OUT / "security_log.jsonl"
 
 VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".mkv"}
 MAX_VIDEO_BYTES = 2 * 1024 ** 3
-WATCH_SITES = {"youtube.com", "www.youtube.com", "m.youtube.com", "instagram.com",
-               "www.instagram.com", "tiktok.com", "www.tiktok.com"}
+WATCH_SITES = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "instagram.com",
+               "www.instagram.com", "tiktok.com", "www.tiktok.com", "vm.tiktok.com"}
 BLOCKED_PATH_WORDS = ("login", "accounts", "settings", "password", "direct/inbox", "checkout", "payments")
 BLOCKED_ACTIONS = {"download", "upload", "repost", "like", "follow", "unfollow", "comment",
                    "dm", "message", "login", "share", "save_to_device", "scrape_bulk"}
@@ -80,26 +80,54 @@ def check_video(path):
     return _log("video", p, True, "ok")
 
 
+def norm_url(url):
+    """Same page, same key: ignore www./m., tracking queries (?igsh=, ?si=, utm_...) and a trailing slash,
+    so `observe` matches the URL the Guard approved even if the browser adds those."""
+    u = urlparse(url.strip())
+    host = (u.hostname or "").lower().removeprefix("www.").removeprefix("m.")
+    path = u.path.rstrip("/") or "/"
+    if host == "youtu.be":
+        host, path = "youtube.com", "/watch"; keep = f"v={u.path.strip('/')}"
+    else:
+        keep = "&".join(q for q in u.query.split("&") if q.startswith("v=")) if path == "/watch" else ""
+    return f"{u.scheme}://{host}{path}" + (f"?{keep}" if keep else "")
+
+
+def check_image(path):
+    """Thumbnails: only image files already in library/ (we never download them)."""
+    p = Path(path)
+    if not _inside(p, LIBRARY):
+        return _log("image", p, False, "outside library/: put thumbnails in library/<creator>/thumbnails/")
+    if p.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
+        return _log("image", p, False, "not an image file")
+    if p.is_symlink() or p.stat().st_size > 50 * 1024 ** 2:
+        return _log("image", p, False, "shortcut or file over 50 MB")
+    return _log("image", p, True, "ok")
+
+
 def check_url(url):
     """For live browser watching: view-only pages on supported sites."""
-    u = urlparse(url)
+    u = urlparse(url.strip())
     if u.scheme != "https":
         return _log("url", url, False, "only https pages")
     if u.hostname not in WATCH_SITES:
         return _log("url", url, False, "site not on the watch list (YouTube, Instagram, TikTok)")
     if any(w in u.path.lower() for w in BLOCKED_PATH_WORDS):
         return _log("url", url, False, "account/login/settings pages are off-limits")
-    return _log("url", url, True, "ok")
+    return _log("url", norm_url(url), True, "ok")
 
 
 def was_approved(url, within=900):
     """True if the Guard approved this exact URL (and pace) in the last `within` seconds."""
     if not LOG.exists():
         return False
-    now, ok = time.time(), False
+    now, ok, key = time.time(), False, norm_url(url)
     for l in LOG.read_text("utf-8").splitlines()[-500:]:
-        r = json.loads(l)
-        if r["kind"] == "url" and r["target"] == url and r["ok"] and now - r["t"] <= within:
+        try:
+            r = json.loads(l)
+        except ValueError:
+            continue
+        if r["kind"] == "url" and r["ok"] and norm_url(r["target"]) == key and now - r["t"] <= within:
             ok = True
     return ok
 
@@ -208,11 +236,11 @@ def head_audit(since=0.0):
     # 1b. every live observation must have an approved URL + pace check right before it
     obs = OUT / "observations.jsonl"
     if obs.exists():
-        ok_urls = {r["target"] for r in recs if r["kind"] == "url" and r["ok"]}
+        ok_urls = {norm_url(r["target"]) for r in recs if r["kind"] == "url" and r["ok"]}
         for l in obs.read_text("utf-8").splitlines():
             if l.strip():
                 o = json.loads(l)
-                if o.get("t", 0) >= since and o.get("url") not in ok_urls:
+                if o.get("t", 0) >= since and norm_url(o.get("url", "")) not in ok_urls:
                     findings.append(f"Live page not approved by Guard: {o.get('url')}")
     # 3. No video files outside library/ (we never download)
     for p in OUT.rglob("*"):
@@ -224,7 +252,7 @@ def head_audit(since=0.0):
             findings.append(f"Possible secret saved in {p.name}")
     blocked = sum(1 for r in recs if not r["ok"])
     passed = not findings
-    report = ["# 👮 Head of Security report", "",
+    report = ["# 🛡️ Security report", "",
               f"- Checks reviewed: **{len(recs)}**", f"- Blocked by Guard: **{blocked}**",
               f"- Result: **{'PASS ✅' if passed else 'FAIL ❌'}**", ""]
     report += [f"- ❌ {f}" for f in findings] or ["- Guard did its job. Nothing slipped through."]

@@ -78,18 +78,30 @@ def you_vs_them(table, me="me"):
     return out
 
 
+def summary(out, studies):
+    """out/summary.json: one tiny row per video, the only study data Claude needs to read."""
+    keys = {"creator": "creator", "x": "outlier_x", "views": "stats.views", "len": "pacing.duration_s",
+            "cuts10": "pacing.cuts_per_10s", "wpm": "pacing.wpm", "hook": "hook.spoken_3s",
+            "text_hook": "hook.on_screen_3s", "music": "audio.has_music_bed", "captions": "captions.present"}
+    rows = [{"id": s["id"]} | {k: get(s, v) for k, v in keys.items() if get(s, v) not in (None, "", [])}
+            for s in studies]
+    (out / "summary.json").write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n", "utf-8")
+
+
 def build(out):
     out = Path(out)
     (out / "study").mkdir(parents=True, exist_ok=True)
     studies = outliers(load_studies(out))
     table = creator_table(studies)
     vs = you_vs_them(table)
+    summary(out, studies)
     e = lambda v: html.escape(", ".join(map(str, v)) if isinstance(v, list) else ("" if v is None else str(v)))
     vid_cols = [("creator", "creator"), ("outlier_x", "outlier ×"), ("stats.views", "views"),
                 ("pacing.duration_s", "len"), ("pacing.cuts_per_10s", "cuts/10s"),
                 ("pacing.wpm", "wpm"), ("pacing.first_word_at_s", "1st word"),
                 ("hook.spoken_3s", "spoken hook"), ("hook.on_screen_3s", "text hook"),
                 ("analysis.hook_type", "hook type"), ("audio.has_music_bed", "music"),
+                ("retention.hook_hold_3s_pct", "3s hold %"), ("retention.avg_pct", "avg retention %"),
                 ("analysis.why_it_works", "why it works"), ("analysis.steal_this", "idea"), ("ctas", "CTAs")]
     vrows = "".join(
         f"<tr><td><img src='study/{s['id']}/hook.jpg' width=70 loading=lazy></td>"
