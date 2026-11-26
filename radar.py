@@ -100,6 +100,10 @@ def cmd_watch(a):
             with open(idx, "a", encoding="utf-8") as f:
                 f.write(json.dumps({"id": s["id"], "creator": creator, "file": v.as_posix(), "t": time.time()}) + "\n")
             live.log(f"[{n}/{len(todo)}] {v.name} analysed in {time.time() - t0:.0f}s")
+            failed = OUT / "_failed.jsonl"
+            if failed.exists():                         # forget old failures of this video
+                keep = [l for l in failed.read_text("utf-8").splitlines() if l.strip() and json.loads(l).get("file") != v.as_posix()]
+                failed.write_text("".join(k + "\n" for k in keep), "utf-8")
         except Exception as e:
             live.log(f"[x] {v.name} failed: {e}")
             with open(OUT / "_failed.jsonl", "a", encoding="utf-8") as f:
