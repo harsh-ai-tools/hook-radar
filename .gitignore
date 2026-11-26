@@ -1,0 +1,7 @@
+.venv/
+out/
+library/
+radar.json
+__pycache__/
+Reel Radar.bat
+reel-radar.sh
