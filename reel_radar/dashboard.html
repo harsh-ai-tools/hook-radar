@@ -16,6 +16,7 @@ main{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:20px;padding
 .col{display:flex;flex-direction:column;gap:20px;min-width:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
 .card h2{font-size:17px;margin:0 0 4px}.card .sub{color:var(--dim);font-size:14px;margin:0 0 12px}
+#web{width:100%;height:62vh;border:0;border-radius:12px;background:#000}
 video,#sheet{width:100%;max-height:60vh;border-radius:12px;background:#000;object-fit:contain;display:block}
 .ctl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 select{font:inherit;font-size:15px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);width:100%;margin-top:10px}
@@ -50,12 +51,14 @@ details{margin:0 22px 22px;max-width:1356px}details summary{cursor:pointer;color
    <h2>Now watching</h2><p class="sub" id="who">Waiting for the first video…</p>
    <video id="vid" muted playsinline loop autoplay onerror="this.style.display='none';sheet.style.display='block'"></video>
    <img id="sheet" style="display:none" alt="Key frames of this video">
-   <div class="ctl">
+   <iframe id="web" referrerpolicy="strict-origin" style="display:none" allow="autoplay; encrypted-media" title="Reel Claude is watching"></iframe>
+   <p class="note" id="webnote" style="display:none">Watching live in the browser (view-only, nothing downloaded). Use the sound button inside the reel.</p>
+   <div class="ctl" id="ctl">
     <button class="btn" id="snd" onclick="toggleSound()">🔇 Speaker: MUTED</button>
-    <button class="btn" id="pp" onclick="vid.paused?vid.play():vid.pause()">⏸ Pause</button>
-    <button class="btn" onclick="vid.currentTime=0;vid.play()">⏮ Replay</button>
+    <button class="btn" id="pp" onclick="if($('web').style.display==='block'&&yt()){ytCmd(this.textContent.includes('Pause')?'pauseVideo':'playVideo');this.textContent=this.textContent.includes('Pause')?'▶ Play':'⏸ Pause';return}vid.paused?vid.play():vid.pause()">⏸ Pause</button>
+    <button class="btn" onclick="if($('web').style.display==='block'&&yt()){$('web').contentWindow.postMessage(JSON.stringify({event:'command',func:'seekTo',args:[0,true]}),'*');ytCmd('playVideo');return}vid.currentTime=0;vid.play()">⏮ Replay</button>
    </div>
-   <p class="note">Mutes your speaker only — Claude can still hear the video.</p>
+   <p class="note" id="mutenote">Mutes your speaker only — Claude can still hear the video.</p>
    <select id="pickv" onchange="this.value?pick(this.value):backToLive()" aria-label="Choose a studied video"><option value="">● Live: what Claude is watching now</option></select>
   </section>
  </div>
@@ -87,8 +90,34 @@ const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim
 function store(k,v){try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){return null}}
 function setTheme(t){t=t||(document.documentElement.dataset.theme==='dark'?'light':'dark');document.documentElement.dataset.theme=t;store('rr_theme',t);$('theme').textContent=t==='dark'?'☀️ Light':'🌙 Dark'}
 setTheme(store('rr_theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
-function toggleSound(){vid.muted=!vid.muted;$('snd').textContent=vid.muted?'🔇 Speaker: MUTED':'🔊 Speaker: ON';if(vid.paused)vid.play().catch(()=>{})}
+function toggleSound(){if($('web').style.display==='block'&&yt()){ytCmd($('snd').textContent.includes('MUTED')?'unMute':'mute');if($('snd').textContent.includes('MUTED'))ytCmd('playVideo');return}vid.muted=!vid.muted;$('snd').textContent=vid.muted?'🔇 Speaker: MUTED':'🔊 Speaker: ON';if(vid.paused)vid.play().catch(()=>{})}
 vid.addEventListener('play',()=>$('pp').textContent='⏸ Pause');vid.addEventListener('pause',()=>$('pp').textContent='▶ Play');
+function embed(u){let m;
+ if(m=u.match(/instagram\.com\/(?:[\w.]+\/)?(?:reel|reels|p)\/([\w-]+)/))return 'https://www.instagram.com/reel/'+m[1]+'/embed/';
+ if(m=u.match(/youtube\.com\/shorts\/([\w-]+)/)||u.match(/[?&]v=([\w-]+)/)||u.match(/youtu\.be\/([\w-]+)/))return 'https://www.youtube.com/embed/'+m[1]+'?enablejsapi=1&playsinline=1&mute=1&loop=1&playlist='+m[1]+'&origin='+encodeURIComponent(location.origin);
+ if(m=u.match(/tiktok\.com\/.*video\/(\d+)/))return 'https://www.tiktok.com/embed/v2/'+m[1];return null}
+const yt=()=>/youtube\.com\/embed/.test($('web').src);
+function ytCmd(func){$('web').contentWindow?.postMessage(JSON.stringify({event:'command',func,args:[]}),'*')}
+window.addEventListener('message',e=>{if(!/youtube\.com$/.test(new URL(e.origin).hostname))return;let d;try{d=JSON.parse(e.data)}catch(x){return}
+ const i=d.info||{};if(i.currentTime!=null)webKaraoke(i.currentTime);if(i.muted!=null)$('snd').textContent=i.muted?'🔇 Speaker: MUTED':'🔊 Speaker: ON'});
+setInterval(()=>{if($('web').style.display==='block'&&yt())$('web').contentWindow?.postMessage(JSON.stringify({event:'listening',id:1}),'*')},1000);
+let segs=[];function webKaraoke(t){segs.forEach((s,i)=>{const e=document.getElementById('s'+i);if(e)e.classList.toggle('now',t>=s[0]&&(i===segs.length-1||t<segs[i+1][0]))})}
+function webMode(on){$('web').style.display=on?'block':'none';$('webnote').style.display=on?'block':'none';
+ const ctrl=!on||yt();['ctl','mutenote'].forEach(i=>$(i).style.display=ctrl?'':'none');$('webnote').style.display=on&&!ctrl?'block':'none';if(on){vid.pause();vid.style.display='none';sheet.style.display='none'}}
+function showWeb(r){const src=embed(r.url||'');webMode(true);shown='web:'+r.url;
+ if(src&&$('web').dataset.src!==src){$('web').dataset.src=src;$('web').src=src;$('snd').textContent='🔇 Speaker: MUTED';$('pp').textContent='⏸ Pause'}webMode(true);
+ $('who').textContent='On '+(r.platform||'the web').replace(/_/g,' ')+' · @'+r.creator;
+ $('strip').innerHTML=`<span class="wait">Claude is watching this reel live in the browser.</span>`;
+ $('vis').outerHTML=`<span class="badge b-${r.visual_hook?'g':'n'}" id="vis">${r.visual_hook?'Yes':'Not noted'}</span>`;
+ segs=r.transcript||[];
+ $('words').innerHTML=segs.length?segs.map((s,i)=>`<span id="s${i}" title="${s[0]}s">${esc(s[1])}</span>`).join(' '):r.hook_spoken?'<span>'+esc(r.hook_spoken)+'</span>':'<span class="wait">No captions on this platform. Claude notes the spoken hook when it can.</span>';words=[];curve=[];audio={};
+ if(!r.hook_spoken&&segs.length)r.hook_spoken=segs.filter(s=>s[0]<3).map(s=>s[1]).join(' ');
+ const out=[row('Spoken hook',r.hook_spoken?B('g','Yes'):B('r','None noted'),r.hook_spoken?'"'+r.hook_spoken+'"':''),
+  row('Text hook',r.hook_text?B('g','Yes'):B('y','No text on screen'),r.hook_text?'"'+r.hook_text+'"':''),
+  row('Visual hook',r.visual_hook?B('g','Yes'):B('n','Not noted'),r.visual_hook||'')];
+ if(r.views)out.push(row('Views',B('n',Number(r.views).toLocaleString()),''));
+ if(r.notes)out.push(row('Claude\'s notes',B('g','Note'),r.notes));
+ $('facts').innerHTML=out.join('')}
 function backToLive(){pinned=false;shown=null;$('pickv').value='';render()}
 function load(v,w,c,a,frames){
   if(shown!==v.id){shown=v.id;vid.style.display='block';sheet.style.display='none';
@@ -127,18 +156,20 @@ function draw(){const c=$('cv'),r=c.getBoundingClientRect();if(!r.width)return;c
 function karaoke(){const t=vid.currentTime;words.forEach((w,i)=>{const e=document.getElementById('w'+i);if(e)e.classList.toggle('now',t>=w.s&&t<=w.e+0.05)})}
 vid.addEventListener('timeupdate',karaoke);
 (function loop(){draw();requestAnimationFrame(loop)})();
-async function pick(id){try{const s=await (await fetch('out/study/'+encodeURIComponent(id)+'.json')).json();pinned=true;
+async function pick(id){if(id.startsWith('web:')){const r=(S.web_history||[]).find(x=>'web:'+x.url===id);if(r){pinned=true;showWeb(r)}return}
+ webMode(false);try{const s=await (await fetch('out/study/'+encodeURIComponent(id)+'.json')).json();pinned=true;
   load({id:s.id,creator:s.creator,platform:s.platform,file:s.file},s.words,s.audio&&s.audio.curve,s.audio,null);
   $('strip').innerHTML=`<div class="fr"><img src="out/study/${encodeURIComponent(s.id)}/contact_sheet.jpg" alt=""><span>all key moments</span></div>`;
   showFacts(s);}catch(e){}}
 function step(s){const n=s.status!=='running'?(s.progress[1]&&s.progress[0]>=s.progress[1]?4:0):s.analysis?3:(s.transcript||[]).length||/\[ears\]/.test((s.log||[]).slice(-1)[0]||'')?2:1;
  [...$('steps').children].forEach((e,i)=>e.className='step'+(i+1<n||n===4?' done':i+1===n?' now':''));
  const h=(s.history||[]).length;$('count').textContent=s.status==='running'&&s.progress[1]?`Video ${Math.min(s.progress[0]+1,s.progress[1])} of ${s.progress[1]}`:h?h+' video'+(h>1?'s':'')+' watched':''}
-function render(){if(!S)return;const s=S;step(s);
+function render(){if(!S)return;const s=S;const webNow=s.web&&s.status!=='running'&&(!s.video||s.web.t>(s.video.started||0));step(s);if(webNow&&!pinned)$('count').textContent='Watching live: '+(s.web_history||[]).length+' reel'+((s.web_history||[]).length>1?'s':'');
  $('log').textContent=s.log.join('\n');$('log').scrollTop=1e9;
- const sel=$('pickv'),ids=(s.history||[]).map(h=>h.id).join();if(sel.dataset.ids!==ids){sel.dataset.ids=ids;const cur=sel.value;
-  sel.innerHTML='<option value="">● Live: what Claude is watching now</option>'+(s.history||[]).map(h=>`<option value="${esc(h.id)}">${esc(h.creator)} · ${esc(h.duration)}s${h.hook?' · "'+esc(h.hook.slice(0,40))+'"':''}</option>`).join('');sel.value=cur}
- if(!pinned&&s.video){load(s.video,s.transcript,s.analysis&&s.analysis.curve,s.analysis&&s.analysis.audio,s.frames);showFacts(s.analysis)}}
+ const sel=$('pickv'),ids=(s.web_history||[]).map(r=>r.url).concat((s.history||[]).map(h=>h.id)).join();if(sel.dataset.ids!==ids){sel.dataset.ids=ids;const cur=sel.value;
+  sel.innerHTML='<option value="">● Live: what Claude is watching now</option>'+(s.web_history||[]).map(r=>`<option value="web:${esc(r.url)}">🌐 @${esc(r.creator)} · ${esc([...(r.hook_spoken||r.hook_text||r.url)].slice(0,40).join(''))}</option>`).join('')+(s.history||[]).map(h=>`<option value="${esc(h.id)}">${esc(h.creator)} · ${esc(h.duration)}s${h.hook?' · "'+esc(h.hook.slice(0,40))+'"':''}</option>`).join('');sel.value=cur}
+ if(!pinned&&webNow){showWeb(s.web);[...$('steps').children].forEach((e,i)=>e.className='step'+(i===0?' now':''))}
+ else if(!pinned&&s.video){webMode(false);load(s.video,s.transcript,s.analysis&&s.analysis.curve,s.analysis&&s.analysis.audio,s.frames);showFacts(s.analysis)}}
 async function tick(){try{const s=await (await fetch('out/live.json?'+Date.now())).json();if(s.updated===lastUp)return;lastUp=s.updated;S=s;render()}catch(e){}}
 setInterval(tick,700);tick();
 </script></body></html>

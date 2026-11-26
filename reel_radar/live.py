@@ -35,6 +35,21 @@ def _save():
         pass                         # dashboard misses one update; analysis carries on
 
 
+def load():
+    """Another process (e.g. `observe`) joins the running dashboard: start from its current state."""
+    try:
+        _state.update(json.loads(_path.read_text("utf-8")))
+    except (OSError, ValueError):
+        pass
+
+
+def web(rec):
+    """Live browser watching: the reel Claude is viewing now (view-only, nothing downloaded)."""
+    _state["web"] = rec
+    _state["web_history"] = ([rec] + [r for r in _state.get("web_history", []) if r.get("url") != rec.get("url")])[:30]
+    _save()
+
+
 def settings(**kw):
     _state["settings"].update(kw); _save()
 

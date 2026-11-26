@@ -103,7 +103,7 @@ def start(port=8765, open_browser=True):
         raise SystemExit("[!] No free port for the dashboard (8765-8784).")
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     url = f"http://127.0.0.1:{port}/?k={TOKEN}"
-    print(f"Dashboard (private link, don't share): {url}")
+    print(f"Dashboard (private link, don't share): {url}", flush=True)
     if open_browser:
         webbrowser.open(url)
     return srv

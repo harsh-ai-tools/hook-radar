@@ -168,6 +168,17 @@ def cmd_check_url(a):
     print("ALLOWED: open it (view only)")
 
 
+def parse_lines(text):
+    """'0:02 words…' lines (captions the page already shows) -> [[seconds, words], ...]"""
+    out = []
+    for line in (text or "").splitlines():
+        m = re.match(r"\s*(?:(\d+):)?(\d+):(\d+)\s+(.*)", line)
+        if m:
+            h, mi, s, w = m.groups()
+            out.append([int(h or 0) * 3600 + int(mi) * 60 + int(s), w.strip()])
+    return out
+
+
 def cmd_observe(a):
     """Called by Claude after viewing a Guard-approved page (view-only)."""
     if not guard.was_approved(a.url):
@@ -175,14 +186,15 @@ def cmd_observe(a):
         sys.exit("[guard] blocked: run `python radar.py check-url URL` before opening a page")
     rec = {"t": time.time(), "url": guard.norm_url(a.url), "creator": a.creator, "platform": a.platform,
            "hook_spoken": a.hook, "hook_text": a.text_hook, "visual_hook": a.visual,
-           "views": a.views, "notes": a.notes}
+           "views": a.views, "notes": a.notes, "transcript": parse_lines(a.transcript)}
     ok, why = guard.check_secrets(json.dumps(rec), "observation")
     if not ok:
         sys.exit(f"[guard] {why}")
     OUT.mkdir(exist_ok=True)
     with open(OUT / "observations.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-    live.set_out(OUT)
+    live.set_out(OUT); live.load()
+    live.web(rec)
     live.log(f"[live] {a.creator}: \"{a.hook or a.text_hook}\" ({a.platform})")
     print("saved observation")
 
@@ -426,7 +438,7 @@ def main():
     ob = sub.add_parser("observe", help="(used by Claude) log a live, view-only browser observation")
     for x in ("--url", "--creator"):
         ob.add_argument(x, required=True)
-    for x in ("--platform", "--hook", "--text-hook", "--visual", "--views", "--notes"):
+    for x in ("--platform", "--hook", "--text-hook", "--visual", "--views", "--notes", "--transcript"):
         ob.add_argument(x, default="")
     rt = sub.add_parser("retention", help="import a YouTube Studio audience-retention export (CSV/ZIP)")
     rt.add_argument("export"); rt.add_argument("--video", help="the video it belongs to, e.g. library/me/my_video.mp4")
