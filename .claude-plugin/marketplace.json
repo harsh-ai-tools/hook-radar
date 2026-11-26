@@ -1,0 +1,5 @@
+{
+  "name": "harsh-ai-tools",
+  "owner": {"name": "Harsh Rajput", "url": "https://github.com/harsh-ai-tools"},
+  "plugins": [{"name": "reel-radar", "source": "./", "description": "AI team that studies your competitors' Shorts, Reels & TikToks and tells you what to make next."}]
+}
