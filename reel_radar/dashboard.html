@@ -1,116 +1,144 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reel Radar · Live</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reel Radar · Live</title>
 <style>
-:root{--bg:#0b0f14;--panel:#121821;--line:#243042;--txt:#d7e2f0;--dim:#7d8da3;--ok:#3fb950;--acc:#58a6ff;--warn:#d29922;--hot:#f778ba}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:13px ui-monospace,Consolas,monospace}
-.grid{display:grid;grid-template-columns:minmax(260px,330px) 1fr 1fr;grid-template-rows:auto 210px 170px 1fr;gap:10px;padding:10px;min-height:100vh}
-.p{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
-.p h3{margin:0 0 8px;font-size:12px;color:var(--dim);font-weight:600;display:flex;gap:8px;align-items:center}.p h3 b{color:var(--acc)}
-.top{grid-column:2/4;flex-direction:row!important;gap:16px;align-items:center;flex-wrap:wrap}
-.pill{background:var(--ok);color:#000;border-radius:6px;padding:2px 8px;font-weight:700}.pill.idle{background:var(--dim)}
-.bar{flex:1;min-width:140px;height:8px;background:#1d2633;border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc);width:0}
-.player{grid-row:1/5}.player video,.player img{width:100%;border-radius:8px;background:#000;max-height:52vh;object-fit:contain}
-.btns{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
-button{background:#1d2633;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
-button:hover{border-color:var(--acc)}button.on{background:var(--acc);color:#000}
-.frames{grid-column:2/4}.strip{display:flex;gap:8px;overflow-x:auto;flex:1}
-.fr{flex:0 0 auto;text-align:center}.fr img{height:135px;border-radius:6px;border:1px solid var(--line)}.fr span{display:block;color:var(--dim);margin-top:3px}
-.ears{grid-column:2/4}canvas{width:100%;flex:1;min-height:90px}
-.legend{color:var(--dim);font-size:11px;margin-top:4px}.legend i{display:inline-block;width:10px;height:3px;margin:0 4px 2px 10px;vertical-align:middle}
-.log,.notes{white-space:pre-wrap;overflow-y:auto;flex:1;line-height:1.45}
-.log .t{color:var(--dim)}.log .e{color:var(--acc)}.log .k{color:var(--ok)}
-.tr{overflow-y:auto;flex:1;line-height:1.9;font-size:14px}.tr span{padding:1px 2px;border-radius:3px}.tr span.now{background:var(--hot);color:#000}
-.stack{display:grid;grid-template-rows:1fr 1fr;gap:10px;min-height:0}
-.hist{display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1}
-.card{display:flex;gap:8px;padding:6px;border:1px solid var(--line);border-radius:8px;cursor:pointer}.card:hover,.card.sel{border-color:var(--acc)}
-.card img{width:44px;height:78px;object-fit:cover;border-radius:4px;background:#000}.card b{color:var(--acc)}
-.tag{display:inline-block;background:#1d2633;border-radius:4px;padding:0 5px;margin:2px 3px 0 0;font-size:11px;color:var(--dim)}
-small{color:var(--dim)}
-@media (max-width:1100px){.grid{grid-template-columns:1fr;grid-template-rows:none}.top,.frames,.ears,.player{grid-column:auto;grid-row:auto}.stack{grid-template-rows:auto auto}.p{min-height:200px}}
+:root{--bg:#f6f7f9;--card:#fff;--line:#e3e7ee;--txt:#1f2937;--dim:#6b7280;--acc:#4f7cff;--soft:#eef2ff;--g:#16a34a;--gbg:#e8f7ee;--y:#b7791f;--ybg:#fdf6e3;--r:#dc2626;--rbg:#fdecec;--n:#6b7280;--nbg:#f1f3f6;--voice:#34b37e;--music:#8b7cf6;--quiet:#f2a541}
+[data-theme=dark]{--bg:#14171c;--card:#1c2027;--line:#2c323c;--txt:#e6e9ef;--dim:#9aa3b2;--acc:#7b9cff;--soft:#232a3a;--gbg:#173323;--ybg:#3a301a;--rbg:#3b1d1d;--nbg:#262b33;--g:#4ade80;--y:#f2c14e;--r:#f87171;--n:#9aa3b2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Noto Sans Gurmukhi",sans-serif}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px 22px;background:var(--card);border-bottom:1px solid var(--line)}
+header h1{font-size:19px;margin:0 8px 0 0}
+.steps{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.step{padding:6px 12px;border-radius:999px;background:var(--nbg);color:var(--dim);font-size:14px}
+.step.done{background:var(--gbg);color:var(--g)}.step.now{background:var(--acc);color:#fff;font-weight:600}
+.count{color:var(--dim);font-size:15px}
+.btn{background:var(--soft);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font:inherit;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--acc)}.btn.main{background:var(--acc);color:#fff;border-color:var(--acc)}
+main{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:20px;padding:20px 22px;max-width:1400px;margin:auto}
+.col{display:flex;flex-direction:column;gap:20px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.card h2{font-size:17px;margin:0 0 4px}.card .sub{color:var(--dim);font-size:14px;margin:0 0 12px}
+video,#sheet{width:100%;max-height:60vh;border-radius:12px;background:#000;object-fit:contain;display:block}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+select{font:inherit;font-size:15px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);width:100%;margin-top:10px}
+.note{color:var(--dim);font-size:14px;margin:8px 0 0}
+#who{font-weight:600}
+.strip{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px}
+.fr{flex:0 0 auto;text-align:center}.fr img{height:150px;border-radius:10px;border:1px solid var(--line);display:block}.fr span{color:var(--dim);font-size:14px}
+.badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:14px;font-weight:600}
+.b-g{background:var(--gbg);color:var(--g)}.b-y{background:var(--ybg);color:var(--y)}.b-r{background:var(--rbg);color:var(--r)}.b-n{background:var(--nbg);color:var(--n)}
+.words{font-size:18px;line-height:2;max-height:180px;overflow-y:auto}
+.words span{padding:2px 3px;border-radius:6px;transition:background .15s}.words span.now{background:var(--acc);color:#fff}
+canvas{width:100%;height:56px;display:block;margin-top:12px;border-radius:8px;cursor:help}
+.legend{display:flex;gap:16px;color:var(--dim);font-size:14px;margin-top:6px;flex-wrap:wrap}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.facts{display:grid;gap:10px}
+.fact{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.fact:last-child{border:0}
+.fact .k{font-weight:600}.fact .v{color:var(--dim);font-size:14px}
+details{margin:0 22px 22px;max-width:1356px}details summary{cursor:pointer;color:var(--dim);font-size:14px;padding:8px 0}
+.log{white-space:pre-wrap;font:12px/1.5 ui-monospace,Consolas,monospace;color:var(--dim);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;max-height:260px;overflow-y:auto}
+.wait{color:var(--dim)}
+@media (max-width:900px){main{grid-template-columns:1fr}}
 </style></head><body>
-<div class="grid">
- <div class="p player">
-  <h3>👀 NOW WATCHING · <b id="who">—</b></h3>
-  <video id="vid" muted playsinline loop autoplay onerror="this.style.display='none';sheet.style.display='block'"></video>
-  <img id="sheet" style="display:none" alt="contact sheet">
-  <div class="btns">
-   <button id="snd" onclick="toggleSound()">🔊 Hear it</button>
-   <button onclick="vid.currentTime=0;vid.play()">⏮ Replay</button>
-   <button id="liveBtn" style="display:none" onclick="backToLive()">● Back to live</button>
-  </div>
-  <small id="file"></small>
-  <h3 style="margin-top:10px">🎤 WHAT IT HEARD <small>(words light up as they're spoken)</small></h3>
-  <div class="tr" id="tr"><small>waiting…</small></div>
+<header>
+ <h1>📡 Reel Radar</h1>
+ <div class="steps" id="steps"><span class="step">1. Watching</span><span class="step">2. Listening</span><span class="step">3. Finding Moves</span><span class="step">4. Ready</span></div>
+ <span class="count" id="count"></span>
+ <a class="btn main" href="out/playbook.html" target="_blank" rel="noopener">Open Playbook (You vs Them)</a>
+ <button class="btn" id="theme" onclick="setTheme()">🌙 Dark</button>
+</header>
+<main>
+ <div class="col">
+  <section class="card">
+   <h2>Now watching</h2><p class="sub" id="who">Waiting for the first video…</p>
+   <video id="vid" muted playsinline loop autoplay onerror="this.style.display='none';sheet.style.display='block'"></video>
+   <img id="sheet" style="display:none" alt="Key frames of this video">
+   <div class="ctl">
+    <button class="btn" id="snd" onclick="toggleSound()">🔇 Speaker: MUTED</button>
+    <button class="btn" id="pp" onclick="vid.paused?vid.play():vid.pause()">⏸ Pause</button>
+    <button class="btn" onclick="vid.currentTime=0;vid.play()">⏮ Replay</button>
+   </div>
+   <p class="note">Mutes your speaker only — Claude can still hear the video.</p>
+   <select id="pickv" onchange="this.value?pick(this.value):backToLive()" aria-label="Choose a studied video"><option value="">● Live: what Claude is watching now</option></select>
+  </section>
  </div>
- <div class="p top"><span class="pill idle" id="st">IDLE</span>
-  <span>eyes <b>ffmpeg+OCR</b> · ears <b>whisper</b> · brain <b id="brain">rules</b></span>
-  <span>analysed <b id="prog">0/0</b></span><div class="bar"><i id="barf"></i></div><span id="meta"></span></div>
- <div class="p frames"><h3>🖼 FRAMES THE AI LOOKED AT · <b id="fmeta">—</b></h3><div class="strip" id="strip"></div></div>
- <div class="p ears"><h3>👂 WHAT IT HEARS · <b id="ameta">sound over time</b></h3><canvas id="cv"></canvas>
-  <div class="legend"><i style="background:#58a6ff"></i>loudness<i style="background:#3fb950"></i>speech<i style="background:#f778ba"></i>you are here<i style="background:#d29922"></i>drop / re-hook<i style="background:#7d8da3"></i>music level</div></div>
- <div class="p"><h3>📜 LIVE LOG</h3><div class="log" id="log"></div></div>
- <div class="stack">
-  <div class="p"><h3>🧠 WHAT THE AI NOTICED</h3><div class="notes" id="notes">waiting…</div></div>
-  <div class="p"><h3>📚 WATCHED SO FAR <b id="hcount"></b></h3><div class="hist" id="hist"></div></div>
+ <div class="col">
+  <section class="card">
+   <h2>👀 What Claude sees</h2><p class="sub">The key moments it looked at, and when.</p>
+   <div class="strip" id="strip"><span class="wait">Pictures appear here as Claude watches.</span></div>
+   <p style="margin:12px 0 0">Picture changes in the first second: <span class="badge b-n" id="vis">—</span></p>
+  </section>
+  <section class="card">
+   <h2>👂 What Claude hears</h2><p class="sub">Words light up as they are spoken.</p>
+   <div class="words" id="words"><span class="wait">Words appear when Claude finishes listening.</span></div>
+   <canvas id="cv"></canvas>
+   <div class="legend"><span><i style="background:var(--voice)"></i>Voice</span><span><i style="background:var(--music)"></i>Music / sound</span><span><i style="background:var(--quiet)"></i>Silence / drop</span><span><i style="background:var(--acc)"></i>Playing now</span></div>
+  </section>
+  <section class="card">
+   <h2>💡 What Claude noticed</h2><p class="sub">Green = strong · Yellow = could be better · Red = fix this</p>
+   <div class="facts" id="facts"><span class="wait">Takeaways appear when the video is done.</span></div>
+  </section>
  </div>
-</div>
+</main>
+<details><summary>Technical details (optional) ▾</summary><div class="log" id="log"></div></details>
 <script>
 if(location.search)history.replaceState(null,'',location.pathname);   // keep the private key out of history
 const $=id=>document.getElementById(id), vid=$('vid'), sheet=$('sheet');
-let S=null, shown=null, pinned=false, lastUp=0, words=[], curve=[], audio={}, sound=false;
+let S=null, shown=null, pinned=false, lastUp=0, words=[], curve=[], audio={};
 const esc=x=>String(x==null?'':x).replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
-function toggleSound(){sound=!sound;vid.muted=!sound;$('snd').classList.toggle('on',sound);$('snd').textContent=sound?'🔇 Mute':'🔊 Hear it';if(sound){vid.currentTime=0;vid.play()}}
-function backToLive(){pinned=false;$('liveBtn').style.display='none';shown=null;render()}
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function store(k,v){try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){return null}}
+function setTheme(t){t=t||(document.documentElement.dataset.theme==='dark'?'light':'dark');document.documentElement.dataset.theme=t;store('rr_theme',t);$('theme').textContent=t==='dark'?'☀️ Light':'🌙 Dark'}
+setTheme(store('rr_theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+function toggleSound(){vid.muted=!vid.muted;$('snd').textContent=vid.muted?'🔇 Speaker: MUTED':'🔊 Speaker: ON';if(vid.paused)vid.play().catch(()=>{})}
+vid.addEventListener('play',()=>$('pp').textContent='⏸ Pause');vid.addEventListener('pause',()=>$('pp').textContent='▶ Play');
+function backToLive(){pinned=false;shown=null;$('pickv').value='';render()}
 function load(v,w,c,a,frames){
   if(shown!==v.id){shown=v.id;vid.style.display='block';sheet.style.display='none';
-    vid.src='/file?p='+encodeURIComponent(v.file);vid.muted=!sound;vid.play().catch(()=>{});
+    vid.src='/file?p='+encodeURIComponent(v.file);vid.play().catch(()=>{});
     sheet.src='out/study/'+encodeURIComponent(v.id)+'/contact_sheet.jpg?'+Date.now();}
-  $('who').textContent=v.creator+' · '+(v.platform||'');$('file').textContent=v.file;
+  $('who').textContent=v.creator+(v.platform?' · '+v.platform.replace(/_/g,' '):'');
   words=w||[];curve=c||[];audio=a||{};
-  $('tr').innerHTML=words.length?words.map((x,i)=>`<span id="w${i}" title="${x.s}s">${esc(x.w)}</span>`).join(' '):'<small>listening… (words appear when the AI finishes hearing it)</small>';
-  $('ameta').textContent=audio.has_music_bed?`background music/sound ${audio.music_bed_db} dB · voice +${audio.voice_vs_music_db} dB above it`:(curve.length?'voice only, no background music':'sound over time');
-  if(frames)$('strip').innerHTML=frames.map(f=>`<div class="fr"><img src="${esc(f.src)}"><span>${f.t.toFixed(1)}s</span></div>`).join('');
+  $('words').innerHTML=words.length?words.map((x,i)=>`<span id="w${i}">${esc(x.w)}</span>`).join(' '):'<span class="wait">'+(curve.length?'No speech in this video.':'Words appear when Claude finishes listening.')+'</span>';
+  const db=audio.has_music_bed?`Music/sound level ${audio.music_bed_db} dB · voice ${audio.voice_vs_music_db} dB above it`:'No background music';
+  $('cv').title=db;
+  if(frames)$('strip').innerHTML=frames.length?frames.map(f=>`<div class="fr"><img src="${esc(f.src)}" alt=""><span>${f.t.toFixed(1)}s</span></div>`).join(''):'<span class="wait">Pictures appear here as Claude watches.</span>';
 }
-function notes(a){if(!a)return'waiting…';const n=[],p=a.pacing||{},h=a.hook||{},au=a.audio||{};
- if(h.spoken_3s)n.push('🗣 Spoken hook: "'+h.spoken_3s+'"');
- if(h.on_screen_3s)n.push('🔤 Text hook: "'+h.on_screen_3s+'"');
- n.push(h.visual_change_in_first_1s?'⚡ Picture changes inside 1s':'🐢 No picture change in the first second');
- if(p.first_word_at_s!=null)n.push('⏱ First word at '+p.first_word_at_s+'s');
- n.push('✂ '+p.cuts_per_10s+' cuts per 10s · avg shot '+p.avg_shot_s+'s');
- if(p.wpm)n.push('🎙 '+p.wpm+' words/min');
- n.push(au.has_music_bed?('🎵 Background music/sound at '+au.music_bed_db+' dB, voice +'+au.voice_vs_music_db+' dB above it'):'🔇 No background music');
- if((au.energy_drops_s||[]).length)n.push('📉 Sound drops at '+au.energy_drops_s.join('s, ')+'s (re-hook moments?)');
- if((a.ctas||[]).length)n.push('📣 Calls to action: '+a.ctas.join(', '));
- if(a.analysis&&a.analysis.why_it_works)n.push('🧠 '+a.analysis.why_it_works);
- return n.join('\n');}
+const B=(cls,txt)=>`<span class="badge b-${cls}">${esc(txt)}</span>`;
+const row=(k,b,v)=>`<div class="fact"><div><div class="k">${k}</div>${v?`<div class="v">${esc(v)}</div>`:''}</div>${b}</div>`;
+function facts(a){if(!a)return null;const p=a.pacing||{},h=a.hook||{},au=a.audio||{},out=[];
+ out.push(row('Spoken hook',h.spoken_3s?B('g','Yes'):B('r','None in first 3s'),h.spoken_3s?'"'+h.spoken_3s+'"':'Say your main point out loud right away.'));
+ out.push(row('Text hook',h.on_screen_3s?B('g','Yes'):B('y','No text on screen'),h.on_screen_3s?'"'+h.on_screen_3s+'"':'Big words on screen help people who watch muted.'));
+ const w=p.wpm||0;out.push(row('Speaking speed',!w?B('n','No speech'):w<130?B('y','Slow'):w<=200?B('g','Normal'):B('g','Fast'),w?w+' words per minute':''));
+ const c=p.cuts_per_10s||0;out.push(row('Cut pace',c>=3?B('g','Fast'):c>=1.5?B('y','Medium'):B('r','Slow'),c+' scene changes every 10 seconds'));
+ let mv;if(au.has_music_bed){const d=au.voice_vs_music_db;mv=d==null?B('n','Music only'):d>=10?B('g','Voice is clear'):d>=4?B('y','Music a bit loud'):B('r','Music covers voice')}else mv=(a.words&&a.words.length)||w?B('g','Voice only'):B('n','No music or voice');
+ out.push(row('Music vs voice',mv,''));
+ if((au.energy_drops_s||[]).length)out.push(row('Quiet moments',B('y',au.energy_drops_s.length+' found'),'At '+au.energy_drops_s.join('s, ')+'s — good places to re-hook.'));
+ if(a.analysis&&a.analysis.why_it_works)out.push(row('Why it works',B('g','AI note'),a.analysis.why_it_works));
+ $('vis').outerHTML=`<span class="badge b-${h.visual_change_in_first_1s?'g':'r'}" id="vis">${h.visual_change_in_first_1s?'Yes':'No'}</span>`;
+ return out.join('');}
+function showFacts(a){const f=facts(a);$('facts').innerHTML=f||'<span class="wait">Takeaways appear when the video is done.</span>';if(!f)$('vis').outerHTML='<span class="badge b-n" id="vis">—</span>'}
 function draw(){const c=$('cv'),r=c.getBoundingClientRect();if(!r.width)return;c.width=r.width*devicePixelRatio;c.height=r.height*devicePixelRatio;
- const g=c.getContext('2d');g.scale(devicePixelRatio,devicePixelRatio);const W=r.width,H=r.height;g.clearRect(0,0,W,H);
- const dur=Math.max(vid.duration||0,curve.length?curve[curve.length-1][0]:0,words.length?words[words.length-1].e:0,1);
- const X=t=>t/dur*W,Y=db=>H-Math.max(0,Math.min(1,(db+60)/60))*(H-6)-3;
- g.fillStyle='rgba(63,185,80,.18)';words.forEach(w=>g.fillRect(X(w.s),0,Math.max(1,X(w.e)-X(w.s)),H));
- if(audio.has_music_bed&&audio.music_bed_db!=null){g.strokeStyle='#7d8da3';g.setLineDash([4,4]);g.beginPath();g.moveTo(0,Y(audio.music_bed_db));g.lineTo(W,Y(audio.music_bed_db));g.stroke();g.setLineDash([])}
- if(curve.length){g.strokeStyle='#58a6ff';g.lineWidth=2;g.beginPath();curve.forEach(([t,m],i)=>i?g.lineTo(X(t),Y(m)):g.moveTo(X(t),Y(m)));g.stroke()}
- g.fillStyle='#d29922';(audio.energy_drops_s||[]).forEach(t=>g.fillRect(X(t)-1,0,3,H));
- if(vid.duration){g.fillStyle='#f778ba';g.fillRect(X(vid.currentTime)-1,0,2,H)}
- if(!curve.length){g.fillStyle='#7d8da3';g.font='12px monospace';g.fillText('the sound graph appears when the AI finishes listening',10,20)}}
+ const g=c.getContext('2d');g.scale(devicePixelRatio,devicePixelRatio);const W=r.width,H=r.height;
+ g.fillStyle=css('--nbg');g.fillRect(0,0,W,H);
+ const dur=Math.max(vid.duration||0,curve.length?curve[curve.length-1][0]:0,words.length?words[words.length-1].e:0,1),X=t=>t/dur*W;
+ if(curve.length){const step=W/curve.length+1;curve.forEach(([t,m])=>{const lvl=Math.max(0,Math.min(1,(m+60)/60));
+   g.fillStyle=m<-45?css('--quiet'):audio.has_music_bed?css('--music'):css('--line');g.globalAlpha=.35+.5*lvl;g.fillRect(X(t),H*(1-lvl),step,H*lvl)});g.globalAlpha=1}
+ g.fillStyle=css('--voice');g.globalAlpha=.85;words.forEach(w=>g.fillRect(X(w.s),H-10,Math.max(2,X(w.e)-X(w.s)),10));g.globalAlpha=1;
+ g.fillStyle=css('--quiet');(audio.energy_drops_s||[]).forEach(t=>g.fillRect(X(t)-1.5,0,3,H));
+ if(vid.duration){g.fillStyle=css('--acc');g.fillRect(X(vid.currentTime)-1,0,3,H)}}
 function karaoke(){const t=vid.currentTime;words.forEach((w,i)=>{const e=document.getElementById('w'+i);if(e)e.classList.toggle('now',t>=w.s&&t<=w.e+0.05)})}
 vid.addEventListener('timeupdate',karaoke);
 (function loop(){draw();requestAnimationFrame(loop)})();
-async function pick(id){try{const s=await (await fetch('out/study/'+encodeURIComponent(id)+'.json')).json();pinned=true;$('liveBtn').style.display='inline-block';
+async function pick(id){try{const s=await (await fetch('out/study/'+encodeURIComponent(id)+'.json')).json();pinned=true;
   load({id:s.id,creator:s.creator,platform:s.platform,file:s.file},s.words,s.audio&&s.audio.curve,s.audio,null);
-  $('strip').innerHTML=`<div class="fr"><img src="out/study/${encodeURIComponent(s.id)}/contact_sheet.jpg"><span>all key frames</span></div>`;
-  $('fmeta').textContent=s.id;$('notes').textContent=notes(s);markSel();}catch(e){}}
-function markSel(){document.querySelectorAll('.card').forEach(c=>c.classList.toggle('sel',c.dataset.id===shown))}
-function render(){if(!S)return;const s=S;
- $('st').textContent=s.status.toUpperCase();$('st').className='pill'+(s.status==='running'?'':' idle');
- $('prog').textContent=s.progress[0]+'/'+s.progress[1];$('barf').style.width=(s.progress[1]?100*s.progress[0]/s.progress[1]:0)+'%';
- if(s.settings.brain)$('brain').textContent=s.settings.brain;$('meta').textContent=s.settings.device||'';
- $('log').innerHTML=s.log.map(l=>{const [t,...r]=l.split(' ');let x=esc(r.join(' '));
-  x=x.replace(/^(\[[a-z]+\])/,'<span class="e">$1</span>').replace(/(\[done\].*)/,'<span class="k">$1</span>');return '<span class="t">'+esc(t)+'</span> '+x}).join('\n');$('log').scrollTop=1e9;
- $('hcount').textContent=(s.history||[]).length?'('+s.history.length+')':'';
- $('hist').innerHTML=(s.history||[]).map(h=>`<div class="card" data-id="${esc(h.id)}" onclick="pick(this.dataset.id)"><img src="out/study/${encodeURIComponent(h.id)}/hook.jpg"><div><b>${esc(h.creator)}</b> <small>${esc(h.platform)} · ${esc(h.duration)}s</small><br>"${esc(h.hook)}"<br>${(h.tags||[]).map(t=>'<span class="tag">'+esc(t)+'</span>').join('')}</div></div>`).join('')||'<small>nothing yet</small>';
- if(!pinned&&s.video){$('fmeta').textContent=s.video.id+' · '+s.frames.length+' frames';
-  load(s.video,s.transcript,s.analysis&&s.analysis.curve,s.analysis&&s.analysis.audio,s.frames);$('notes').textContent=notes(s.analysis)}
- markSel();}
+  $('strip').innerHTML=`<div class="fr"><img src="out/study/${encodeURIComponent(s.id)}/contact_sheet.jpg" alt=""><span>all key moments</span></div>`;
+  showFacts(s);}catch(e){}}
+function step(s){const n=s.status!=='running'?(s.progress[1]&&s.progress[0]>=s.progress[1]?4:0):s.analysis?3:(s.transcript||[]).length||/\[ears\]/.test((s.log||[]).slice(-1)[0]||'')?2:1;
+ [...$('steps').children].forEach((e,i)=>e.className='step'+(i+1<n||n===4?' done':i+1===n?' now':''));
+ const h=(s.history||[]).length;$('count').textContent=s.status==='running'&&s.progress[1]?`Video ${Math.min(s.progress[0]+1,s.progress[1])} of ${s.progress[1]}`:h?h+' video'+(h>1?'s':'')+' watched':''}
+function render(){if(!S)return;const s=S;step(s);
+ $('log').textContent=s.log.join('\n');$('log').scrollTop=1e9;
+ const sel=$('pickv'),ids=(s.history||[]).map(h=>h.id).join();if(sel.dataset.ids!==ids){sel.dataset.ids=ids;const cur=sel.value;
+  sel.innerHTML='<option value="">● Live: what Claude is watching now</option>'+(s.history||[]).map(h=>`<option value="${esc(h.id)}">${esc(h.creator)} · ${esc(h.duration)}s${h.hook?' · "'+esc(h.hook.slice(0,40))+'"':''}</option>`).join('');sel.value=cur}
+ if(!pinned&&s.video){load(s.video,s.transcript,s.analysis&&s.analysis.curve,s.analysis&&s.analysis.audio,s.frames);showFacts(s.analysis)}}
 async function tick(){try{const s=await (await fetch('out/live.json?'+Date.now())).json();if(s.updated===lastUp)return;lastUp=s.updated;S=s;render()}catch(e){}}
 setInterval(tick,700);tick();
 </script></body></html>
