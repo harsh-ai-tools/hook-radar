@@ -11,7 +11,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 <p align="center"><img src="docs/how-it-works.png" alt="How Reel Radar works" width="100%"></p>
 
 ## 📸 See it in action
-**Live dashboard**: watch the AI see, hear and grade each video in real time
+**Live dashboard**: see and *hear* exactly what the AI watches: 🔊 play the sound, 🎤 words light up as they're spoken, 👂 live sound graph (speech, music, re-hook drops), 📚 replay any video it already watched
 <p align="center"><img src="docs/dashboard.png" alt="Live dashboard" width="100%"></p>
 
 **Playbook**: You vs Them, creator profiles and every video in one page

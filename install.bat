@@ -20,7 +20,7 @@ if not defined PY (
   echo Python installed. Close this window and double-click install.bat again to continue.
   pause
   exit /b 0
-) else ( echo [1/4] Python found. )
+) else ( echo [1/4] Python found: %PY% )
 %PY% -c "import sys; sys.exit(0 if (3,10) <= sys.version_info[:2] <= (3,13) else 1)" || ( echo Reel Radar needs Python 3.10 to 3.13. Please install Python 3.12 from python.org. & pause & exit /b 1 )
 where ffmpeg >nul 2>nul
 if errorlevel 1 (

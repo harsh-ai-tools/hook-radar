@@ -80,6 +80,8 @@ def cmd_watch(a):
     if not a.no_dashboard:
         server.start(a.port)
     live.settings(brain=a.ollama or "rules only", device=("GPU" if a.gpu else "CPU") + " · local · no downloads")
+    for st in reversed(report.load_studies(OUT)):     # show earlier videos in "Watched so far"
+        live.watched(engine.watch_item(st))
     idx = OUT / "study_index.jsonl"
     done = set()
     if idx.exists():
