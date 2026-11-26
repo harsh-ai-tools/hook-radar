@@ -16,7 +16,7 @@ Run commands from there: `python radar.py <command>` (use `py` on Windows if `py
 
 ## Ground rules (every member)
 - 🛡️ Never download, upload, repost, like, follow, comment, DM or log in for the user. View only.
-- Only analyse videos already in `library/`. Live watching goes through `radar.py observe` (the Guard checks every page).
+- Only analyse videos already in `library/`. Live watching: `radar.py check-url URL` before every page, then `radar.py observe` (Guard-approved pages only).
 - Inspire, never copy: rewrite every idea in the user's own words; run `radar.py originality` on scripts.
 - Never ask for or store passwords, cookies or API keys in files.
 - After any task, hand over to the Head of Security (`python radar.py audit`).
