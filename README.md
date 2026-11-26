@@ -1,55 +1,70 @@
-# 🎬 Reel Radar
+<h1 align="center">📡 Reel Radar</h1>
+<p align="center"><b>Free, local AI that studies your competitors' Shorts, Reels & TikToks and shows you exactly what to improve.</b><br>
+Runs 100% on your PC · never downloads videos · no paid APIs</p>
+<p align="center"><i>Made by Harsh Rajput · MIT License</i></p>
 
-**A free, local AI tool that watches Shorts / Reels / TikToks and turns them into a playbook of hooks, pacing and formats.**
-Runs on **Windows, Linux and Mac**. No paid APIs, no account needed.
+---
 
-> Made by **Harsh Rajput** · part of [harsh-ai-tools](https://github.com/harsh-ai-tools): free tools for Claude & creators.
+## ✨ Features
 
-## What it gives you for every video
-| Field | What it means |
-|---|---|
-| Hook line (first 3 s) | Exactly what's said in the opening |
-| Cuts, cuts in first 3 s, avg shot length | How fast the edit moves |
-| Words per minute, first word at | Voice pacing |
-| On-screen text | Captions/titles read by OCR |
-| Giveaways | "Comment X", "link in bio", "part 2" style CTAs |
-| AI verdict *(optional)* | Hook type, format, story beats, why it works, an idea to steal |
-| Views / likes / comments | From the video page |
+**👁️ Eyes: what it sees**
+- **Scene cuts**: finds every cut and measures cuts per 10 seconds
+- **Key frames**: grabs the opening seconds plus one frame after every cut
+- **Contact sheet**: the whole video on one image, with timestamps
+- **On-screen text**: reads captions and titles, and where they sit on screen
+- **Visual hook**: checks if the picture changes in the first second and if frame 0 has text
 
-Everything rolls into **`out/playbook.html`**, a sortable, searchable table with hook thumbnails.
+**👂 Ears: what it hears**
+- **Transcript**: every word with its exact time (GPU or CPU)
+- **Spoken hook**: exactly what's said in the first 3 seconds
+- **Voice pace**: words per minute and when the first word starts
+- **Music bed**: detects background music and its loudness
+- **Voice vs music**: how much louder the voice is than the music
+- **Silences & drops**: dead air, and sudden audio drops used as re-hooks
+- **Voice energy**: how often the speaker's energy changes
 
-## Install (Windows, one time)
-1. Install **Python 3.10+** (tick "Add to PATH").
-2. Install **ffmpeg**: `winget install Gyan.FFmpeg`, then reopen the terminal.
-3. In this folder: `pip install -r requirements.txt`
-4. *Optional AI verdict:* install [Ollama](https://ollama.com), then `ollama pull qwen2.5vl:7b` (8 GB+ VRAM; use `qwen2.5vl:3b` on smaller GPUs).
-5. *Optional NVIDIA speed-up:* `pip install nvidia-cublas-cu12 nvidia-cudnn-cu12`
+**🧠 Brain: what it learns**
+- **Fixed analysis format**: every video graded on the same fields, so results compare cleanly
+- **AI verdict** *(optional, free & local via Ollama)*: hook type, format, story beats, re-hooks, ending, why it works, an idea to reuse
+- **CTA finder**: spots "comment X", "link in bio", "part 2" and more
+- **Outlier score**: shows which videos beat their creator's usual views (×2, ×10…)
 
-## Use
-Put links in `urls.txt`, one per line (YouTube Shorts, Instagram Reels or TikTok), then:
+**📊 Reports**
+- **You vs Them**: your numbers next to your competitors', marked ahead, level or behind
+- **Creator profiles**: each competitor's typical pacing, length, hook style
+- **Playbook**: a searchable, sortable table of every video with hook thumbnails
 
-```bash
-python reel_radar.py --urls urls.txt                         # analyse
-python reel_radar.py --urls urls.txt --ollama qwen2.5vl:7b   # + AI verdict
-python reel_radar.py --local D:\clips                        # your own .mp4 files, offline
-python reel_radar.py --playbook-only                         # rebuild the HTML only
-```
+**🖥️ Live dashboard**
+- Watch the AI work in real time: the video, frames, live log, analysis and transcript side by side
 
-## Output
-- `out/study/<id>.json`: full analysis (metrics, cut times, on-screen text, transcript with word timing, giveaways, AI verdict)
-- `out/study/<id>/hook.jpg` and `contact_sheet.jpg`
-- `out/study_index.jsonl`: one summary line per video
-- `out/_failed.jsonl`: failures (videos already done are skipped on re-run)
+**🔒 Safe by design**
+- Never downloads or uploads videos; it only reads files already in your `library/` folder
+- Dashboard runs only on your own PC (127.0.0.1) and can't open files outside your library
+- No logins, passwords or cookies stored
 
-## How it works
-`yt-dlp` download → `ffmpeg` scene cuts + key frames → `RapidOCR` on-screen text → `faster-whisper` transcript → pacing metrics → optional local vision model via `Ollama` → JSON + HTML playbook.
+---
 
-## Notes
-- AI output is a **draft**: check names, dates and quotes before using them.
-- For **study only**. Don't re-upload other creators' videos, and credit them. Downloading may go against platform terms.
+## 🚀 Quick start (Windows)
+1. Install **Python 3.10+** (tick "Add to PATH") and **ffmpeg** (`winget install Gyan.FFmpeg`)
+2. In this folder: `pip install -r requirements.txt`
+3. `python radar.py init`: tell it your niche, platforms and competitors
+4. Put videos you already have into folders:
+   - your own → `library/me/`
+   - a competitor's → `library/<their name>/` (optional `stats.csv`: `file,views,likes,comments,posted`)
+5. `python radar.py watch`: the live dashboard opens at `http://127.0.0.1:8765`
+6. Open `out/playbook.html` for You vs Them
 
-## Credits
-Inspired by [jakeb144/reel-watcher](https://github.com/jakeb144/reel-watcher) (MIT, Mac-only, uses Apify). Reel Radar is a from-scratch rewrite that is free, cross-platform and adds pacing metrics.
+*Optional AI verdict:* install [Ollama](https://ollama.com), run `ollama pull qwen2.5vl:7b`, then `python radar.py watch --ollama qwen2.5vl:7b`
 
-## License
-MIT © 2026 Harsh Rajput
+## 🗺️ Roadmap
+- [x] Eyes, ears, fixed analysis, live dashboard, You vs Them
+- [ ] AI team: Manager, Security Guard, Head of Security, Scout, Mastermind, Scriptwriter, Editor, YouTube & Instagram managers
+- [ ] Live browser watching (view only, no downloads)
+- [ ] Mastermind: learns creators' script & visual style and writes your next brief
+- [ ] Pre-post check, trend radar, comment mining, weekly report
+- [ ] One-click installer + Claude plugin
+
+## 🙏 Credits
+Inspired by [jakeb144/reel-watcher](https://github.com/jakeb144/reel-watcher). Reel Radar is a from-scratch rewrite: cross-platform, local-only, with pacing, audio and competitor comparison.
+
+> ⚠️ For study only. Don't re-upload other creators' videos or copy their scripts word for word. AI output is a draft: verify before using.
