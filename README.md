@@ -44,6 +44,28 @@ Runs 100% on your PC · never downloads videos · no paid APIs</p>
 
 ---
 
+## 📥 How to download
+Pick any one way. **Way 1 is the easiest.**
+
+**Way 1: Download ZIP (no GitHub account needed)**
+1. On this page, click the green **`<> Code`** button
+2. Click **Download ZIP**
+3. Right-click the downloaded file → **Extract All**
+4. Open the extracted folder → done ✅
+
+**Way 2: GitHub Desktop (easy updates later)**
+1. Install [GitHub Desktop](https://desktop.github.com)
+2. Click the green **`<> Code`** button → **Open with GitHub Desktop**
+3. Choose a folder → **Clone**. To update later, click **Fetch origin**
+
+**Way 3: Command line (for developers)**
+```bash
+git clone https://github.com/harsh-ai-tools/reel-radar.git
+cd reel-radar
+```
+
+---
+
 ## 🚀 Quick start (Windows)
 1. Install **Python 3.10+** (tick "Add to PATH") and **ffmpeg** (`winget install Gyan.FFmpeg`)
 2. In this folder: `pip install -r requirements.txt`
@@ -63,8 +85,5 @@ Runs 100% on your PC · never downloads videos · no paid APIs</p>
 - [ ] Mastermind: learns creators' script & visual style and writes your next brief
 - [ ] Pre-post check, trend radar, comment mining, weekly report
 - [ ] One-click installer + Claude plugin
-
-## 🙏 Credits
-Inspired by [jakeb144/reel-watcher](https://github.com/jakeb144/reel-watcher). Reel Radar is a from-scratch rewrite: cross-platform, local-only, with pacing, audio and competitor comparison.
 
 > ⚠️ For study only. Don't re-upload other creators' videos or copy their scripts word for word. AI output is a draft: verify before using.
