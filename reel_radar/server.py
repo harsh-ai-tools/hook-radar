@@ -4,7 +4,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
-ROOT = Path.cwd().resolve()
+ROOT = Path(__file__).resolve().parent.parent
 ALLOWED = [ROOT / "out", ROOT / "library"]
 DASH = Path(__file__).with_name("dashboard.html")
 
@@ -48,7 +48,15 @@ class H(SimpleHTTPRequestHandler):
 
 
 def start(port=8765, open_browser=True):
-    srv = ThreadingHTTPServer(("127.0.0.1", port), H)
+    for p in range(port, port + 20):                 # port busy? try the next one
+        try:
+            srv = ThreadingHTTPServer(("127.0.0.1", p), H)
+            port = p
+            break
+        except OSError:
+            continue
+    else:
+        raise SystemExit("[!] No free port for the dashboard (8765-8784).")
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     url = f"http://127.0.0.1:{port}/"
     print(f"Dashboard: {url}")

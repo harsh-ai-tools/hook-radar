@@ -51,7 +51,7 @@ def init():
     save(p)
     for c in [p["me"]["name"]] + [c["name"] for c in p["competitors"]]:
         (LIBRARY / c).mkdir(parents=True, exist_ok=True)
-    print(f"\nSaved radar.json. Put videos you already have on your PC into library/<creator>/")
+    print("\nSaved radar.json. Put videos you already have on your PC into library/<creator>/")
     print("  your own videos  -> library/me/")
     print("  a competitor's   -> library/<their name>/   (optional stats.csv: file,views,likes,comments,posted)")
     print("Tip: ask Claude 'scout competitors for my niche' to get suggestions you can approve.\n")

@@ -79,6 +79,7 @@ def you_vs_them(table, me="me"):
 
 def build(out):
     out = Path(out)
+    (out / "study").mkdir(parents=True, exist_ok=True)
     studies = outliers(load_studies(out))
     table = creator_table(studies)
     vs = you_vs_them(table)

@@ -15,8 +15,9 @@ HOOK_TIMES = [0.0, 0.5, 1.0, 2.0, 3.0]
 MAX_FRAMES = 24
 VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".mkv"}
 CTA_RE = re.compile(
-    r"\b(comment|dm me|dm|message me|type|reply)\b\s+[\"'“]?([A-Za-z0-9]{2,20})[\"'”]?"
-    r"|link in (?:my )?bio|follow for part \d+|part \d+|subscribe|follow (?:me|for more)", re.I)
+    r"\b(?:comment|dm me|dm)\s+[\"'“]?[A-Za-z0-9]{2,20}[\"'”]?(?=\s+(?:and|to|for|below|if)\b|[\s.!,]*$)"
+    r"|\blink in (?:my )?bio\b|\b(?:follow|subscribe) for (?:part \d+|more)\b|\bpart \d+ (?:is )?(?:coming|tomorrow|next)\b"
+    r"|\bsave this\b|\bshare this with\b", re.I)
 
 
 def run(cmd):
@@ -38,8 +39,19 @@ def resolution(video):
     return r.stdout.strip().replace(",", "x")
 
 
-def vid_id(path):
-    return re.sub(r"[^A-Za-z0-9_-]", "_", Path(path).stem)[:60]
+def vid_id(path, creator=""):
+    raw = f"{creator}__{Path(path).stem}" if creator else Path(path).stem
+    safe = re.sub(r"[^A-Za-z0-9_-]", "_", raw)[:70]
+    if safe != raw:                                   # non-English names: add a short unique code
+        import hashlib
+        safe += "_" + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:6]
+    return safe
+
+
+def has_audio(video):
+    r = run(["ffprobe", "-v", "error", "-select_streams", "a", "-show_entries",
+             "stream=index", "-of", "csv=p=0", str(video)])
+    return bool(r.stdout.strip())
 
 
 # ------------------------------------------------------------------ EYES
@@ -87,40 +99,60 @@ def contact_sheet(frames, dest, cols=4, w=240):
 
 
 _ocr = None
+def _ocr_run(path):
+    """Returns [(box, text, score)] for both rapidocr 3.x and old rapidocr_onnxruntime."""
+    r = _ocr(str(path))
+    if isinstance(r, tuple):                      # old API: (result, elapse)
+        return [(b, t, float(c)) for b, t, c in (r[0] or [])]
+    if getattr(r, "txts", None) is None:          # new API, nothing found
+        return []
+    boxes = r.boxes.tolist() if hasattr(r.boxes, "tolist") else r.boxes
+    return [(b, t, float(c)) for b, t, c in zip(boxes, r.txts, r.scores)]
+
+
 def ocr(frames):
     global _ocr
-    try:
-        from rapidocr_onnxruntime import RapidOCR
-    except ImportError:
-        live.log("[eyes] OCR not installed, skipping on-screen text")
-        return []
-    _ocr = _ocr or RapidOCR()
+    if _ocr is None:
+        try:
+            from rapidocr import RapidOCR
+        except ImportError:
+            try:
+                from rapidocr_onnxruntime import RapidOCR
+            except ImportError:
+                live.log("[eyes] OCR not installed, skipping on-screen text")
+                return []
+        _ocr = RapidOCR()
+    from PIL import Image
     seen, out = set(), []
     for t, f in frames:
-        res, _ = _ocr(str(f))
-        for box, text, conf in res or []:
+        h = Image.open(f).height or 1
+        for box, text, conf in _ocr_run(f):
             key = text.strip().lower()
-            if float(conf) > 0.6 and len(key) > 1 and key not in seen:
+            if conf > 0.6 and len(key) > 1 and key not in seen:
                 seen.add(key)
-                ys = [p[1] for p in box]
+                ys = [pt[1] for pt in box]
                 out.append({"t": t, "text": text.strip(),
-                            "y_pct": round(sum(ys) / len(ys) / 640 * 100)})  # frames are 360 wide
+                            "y_pct": round(sum(ys) / len(ys) / h * 100)})
     return out
 
 
 # ------------------------------------------------------------------ EARS
 _wm = None
-def transcribe(video, size):
+def transcribe(video, size, gpu=False, language=None):
     global _wm
     from faster_whisper import WhisperModel
     if _wm is None:
-        try:
-            _wm = WhisperModel(size, device="cuda", compute_type="float16")
-            live.log("[ears] whisper on GPU")
-        except Exception:
+        if gpu:
+            try:
+                _wm = WhisperModel(size, device="cuda", compute_type="float16")
+                live.log("[ears] whisper on GPU")
+            except Exception as e:
+                live.log(f"[ears] GPU not available ({e}); using CPU")
+        if _wm is None:
             _wm = WhisperModel(size, device="cpu", compute_type="int8")
             live.log("[ears] whisper on CPU")
-    segs, info = _wm.transcribe(str(video), word_timestamps=True, vad_filter=True)
+    lang = language if language and language not in ("auto", "") else None
+    segs, info = _wm.transcribe(str(video), word_timestamps=True, vad_filter=True, language=lang)
     words, text = [], []
     for s in segs:
         text.append(s.text.strip())
@@ -168,7 +200,7 @@ def ears(video, words, dur):
             energy_shifts += 1
     out = {
         "music_bed_lufs": round(median(bed), 1) if bed else None,
-        "has_music_bed": bool(bed) and median(bed) > -45,
+        "has_music_bed": bool(bed) and bool(voice) and median(bed) > -45,
         "voice_lufs": round(median(voice), 1) if voice else None,
         "voice_vs_music_db": round(median(voice) - median(bed), 1) if bed and voice else None,
         "silences": sil,
@@ -253,7 +285,7 @@ def ai_verdict(model, sheet, tr, ocr_lines, m, a, host):
 def analyse(video, creator, platform, out, opts):
     """Analyse one local video file. Returns the full study dict."""
     video = Path(video)
-    vid = vid_id(video)
+    vid = vid_id(video, creator)
     folder = out / "study" / vid
     folder.mkdir(parents=True, exist_ok=True)
     live.start_video(vid, creator, platform, str(video))
@@ -268,9 +300,14 @@ def analyse(video, creator, platform, out, opts):
         shutil.copy(frames[0][1], folder / "hook.jpg")
     ocr_lines = [] if opts.no_ocr else ocr(frames)
     live.log(f"[eyes] on-screen text: {len(ocr_lines)} lines")
-    tr = transcribe(video, opts.whisper)
-    live.log(f"[ears] transcript: {len(tr['words'])} words · lang={tr['language']}")
-    a = ears(video, tr["words"], dur)
+    if has_audio(video):
+        tr = transcribe(video, opts.whisper, getattr(opts, "gpu", False), getattr(opts, "language", None))
+        live.log(f"[ears] transcript: {len(tr['words'])} words · lang={tr['language']}")
+        a = ears(video, tr["words"], dur)
+    else:
+        live.log("[ears] no audio track: skipping transcript and audio analysis")
+        tr = {"language": None, "text": "", "words": []}
+        a = {"has_music_bed": False, "silences": [], "energy_drops_s": [], "curve": []}
     m = pacing(dur, cuts, tr["words"])
     study = {
         "id": vid, "creator": creator, "platform": platform, "file": str(video),
