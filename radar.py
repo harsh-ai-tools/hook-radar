@@ -187,6 +187,9 @@ def cmd_observe(a):
     rec = {"t": time.time(), "url": guard.norm_url(a.url), "creator": a.creator, "platform": a.platform,
            "hook_spoken": a.hook, "hook_text": a.text_hook, "visual_hook": a.visual,
            "views": a.views, "notes": a.notes, "transcript": parse_lines(a.transcript)}
+    p = profile.load()
+    mine = {x.lstrip("@").lower() for x in [p["me"]["name"], *p["me"].get("handles", {}).values()] if x}
+    rec["mine"] = bool(a.mine) or a.creator.lstrip("@").lower() in mine
     ok, why = guard.check_secrets(json.dumps(rec), "observation")
     if not ok:
         sys.exit(f"[guard] {why}")
@@ -197,6 +200,52 @@ def cmd_observe(a):
     live.web(rec)
     live.log(f"[live] {a.creator}: \"{a.hook or a.text_hook}\" ({a.platform})")
     print("saved observation")
+
+
+def cmd_hear(a):
+    """Optional Instagram hearing: record the speaker output while a reel plays, transcribe, keep only text.
+    Audio stays in memory and is never written to disk. Off by default."""
+    p = profile.load()
+    if a.toggle:
+        p["hearing"] = a.toggle == "on"; profile.save(p)
+        print(f"Instagram hearing {'ON' if p['hearing'] else 'OFF'}")
+        return
+    if not p.get("hearing"):
+        sys.exit("Instagram hearing is OFF. Turn it on once with: python radar.py hear on")
+    if not a.url or not guard.was_approved(a.url):
+        sys.exit("[guard] blocked: run `python radar.py check-url URL` first, then hear --url URL")
+    try:
+        import warnings
+        import soundcard as sc
+        warnings.filterwarnings("ignore", category=sc.SoundcardRuntimeWarning)
+    except ImportError:
+        sys.exit("Install the recorder once: pip install soundcard")
+    mic = sc.get_microphone(str(sc.default_speaker().name), include_loopback=True)
+    print(f"[ears] listening to speakers for {a.seconds}s - play the reel now", flush=True)
+    audio = mic.record(samplerate=16000, numframes=int(16000 * a.seconds)).mean(axis=1).astype("float32")
+    if float(abs(audio).max()) < 1e-4:
+        sys.exit("Heard silence: is the reel playing with sound (not muted)?")
+    import contextlib
+    with contextlib.redirect_stdout(sys.stderr):     # keep stdout = transcript lines only
+        r = engine.transcribe(audio, a.model, gpu=a.gpu, language=a.language or p.get("language"))
+    del audio
+    t0 = r["words"][0]["s"] if r["words"] else 0     # recording starts before play: 0:00 = first word
+    for w in _lines([{**w, "s": w["s"] - t0} for w in r["words"]]):
+        print(w)
+
+
+def _lines(words, gap=2.0):
+    """words -> '0:02 words' lines (the format observe --transcript reads)."""
+    out, cur, t0 = [], [], 0.0
+    for w in words:
+        if cur and w["s"] - t0 >= gap:
+            out.append(f"{int(t0)//60}:{int(t0)%60:02d} " + " ".join(cur)); cur = []
+        if not cur:
+            t0 = w["s"]
+        cur.append(w["w"])
+    if cur:
+        out.append(f"{int(t0)//60}:{int(t0)%60:02d} " + " ".join(cur))
+    return out
 
 
 def cmd_retention(a):
@@ -440,6 +489,11 @@ def main():
         ob.add_argument(x, required=True)
     for x in ("--platform", "--hook", "--text-hook", "--visual", "--views", "--notes", "--transcript"):
         ob.add_argument(x, default="")
+    ob.add_argument("--mine", action="store_true", help="this reel is yours (for You vs Them)")
+    he = sub.add_parser("hear", help="(optional, off by default) hear an Instagram reel via your speakers -> text only")
+    he.add_argument("toggle", nargs="?", choices=["on", "off"]); he.add_argument("--url")
+    he.add_argument("--seconds", type=float, default=75); he.add_argument("--model", default="small")
+    he.add_argument("--language"); he.add_argument("--gpu", action="store_true")
     rt = sub.add_parser("retention", help="import a YouTube Studio audience-retention export (CSV/ZIP)")
     rt.add_argument("export"); rt.add_argument("--video", help="the video it belongs to, e.g. library/me/my_video.mp4")
     rt.add_argument("--creator", default="me"); rt.add_argument("--duration", type=float, help="video length in seconds")
@@ -473,6 +527,7 @@ def main():
         if not a.all and not a.creator:
             sys.exit("Say which creator, or --all")
         cmd_forget(a)
+    elif a.cmd == "hear": cmd_hear(a)
     elif a.cmd == "retention": cmd_retention(a)
     elif a.cmd == "thumbs": cmd_thumbs(a)
     elif a.cmd == "scout": cmd_scout(a)

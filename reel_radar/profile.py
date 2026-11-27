@@ -39,7 +39,7 @@ def init(niche=None, language=None, platforms=None):
     print("\n=== Reel Radar setup ===  (press Enter to keep the value in brackets)\n")
     p["niche"] = ask("Your niche in a few words (e.g. 'animated history shorts')", p["niche"])
     p["language"] = ask("Main language of your videos (en, hi, pa, ...)", p["language"])
-    plats = ask("Platforms (comma list: youtube_shorts, instagram_reels, tiktok, youtube_long)",
+    plats = ask("Platforms (comma list: youtube_shorts, instagram_reels, youtube_long)",
                 ",".join(p["platforms"]))
     p["platforms"] = [x.strip() for x in plats.split(",") if x.strip()]
     for pl in p["platforms"]:

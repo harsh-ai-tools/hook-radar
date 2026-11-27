@@ -5,7 +5,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 DOWNLOADERS = re.compile(r"\b(yt-dlp|youtube-dl|gallery-dl|instaloader|you-get|streamlink)\b"
-                         r"|\b(curl|wget|ffmpeg)\b[^|;&]*(youtube\.com|youtu\.be|instagram\.com|tiktok\.com)", re.I)
+                         r"|\b(curl|wget|ffmpeg)\b[^|;&]*(youtube\.com|youtu\.be|instagram\.com)", re.I)
 
 
 def main():

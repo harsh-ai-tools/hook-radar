@@ -1,7 +1,7 @@
 <p align="center"><img src="docs/banner.png" alt="Reel Radar" width="100%"></p>
 
 <h1 align="center"><img src="docs/logo.svg" width="40" align="top"> Reel Radar</h1>
-<p align="center"><b>A free, local AI team that studies your competitors' Shorts, Reels & TikToks and tells you exactly what to make next.</b><br>
+<p align="center"><b>A free, local AI team that studies your competitors' YouTube Shorts & Instagram Reels and tells you exactly what to make next.</b><br>
 Runs 100% on your PC · never downloads videos · no paid APIs · works with Claude</p>
 <p align="center"><i>Made by Harsh Rajput · MIT License</i></p>
 
@@ -17,7 +17,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 **Playbook**: You vs Them, creator profiles and every video in one page
 <p align="center"><img src="docs/playbook.png" alt="Playbook report" width="100%"></p>
 
-<sub>Dashboard: Claude watching one of our own HISTORICAL Shorts live (official embed, view-only). Playbook: demo videos generated for testing.</sub>
+<sub>Dashboard: real capture of Claude watching our own @historical_hq Reel live, with You vs Them. Playbook: demo videos generated for testing.</sub>
 
 ---
 
@@ -37,7 +37,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 
 **🧠 Mastermind: what it learns**
 - **Winning traits**: what outlier videos do differently from the rest
-- **Creator style**: each competitor's hook types, length, pacing, captions, music, CTAs
+- **Creator style**: each competitor's hook types (needs the optional local Ollama AI), length, pacing, captions, music, CTAs
 - **Outlier score**: which videos beat their creator's usual views (×2, ×10…)
 - **Trend radar**: rising words and topics in your niche, weighted by performance
 - **Comment ideas**: viewer questions turned into video ideas
@@ -45,7 +45,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 
 **📡 Live mode (v2.3.0)**: Claude watches in the Claude app's built-in browser, view-only, and the dashboard updates as it goes. Zero downloads.
 - **YouTube Shorts**: plays through the official embed; Claude reads the on-page captions, so words light up as they're spoken
-- **Instagram Reels**: plays through the official embed with Claude's visual and on-screen-text notes. Instagram has no captions, so **audio transcription for Reels isn't supported yet**
+- **Instagram Reels**: plays through the official embed with Claude's visual and on-screen-text notes. Instagram has no captions, so hearing is **optional and off by default**: `radar.py hear on`, then Claude runs `radar.py hear --url URL` while the reel plays. It listens to your speakers, transcribes with Whisper and keeps only the text: the audio stays in memory and is never saved (Windows; needs `pip install soundcard`)
 
 **📈 Retention & 🖼️ thumbnails**
 - **Retention import**: drop in a YouTube Studio *Audience retention* export (CSV or the .zip). See your 3-second hold, the biggest drops, what was said or shown at each drop, and rewatch spikes
@@ -78,7 +78,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 **🔒 Safety & privacy**
 - **View-only:** never downloads, uploads, likes, follows, comments or DMs
 - **Your files:** only reads videos already in your `library/` folder, and never deletes them
-- **Live watching:** the Guard approves every page *before* it opens: only YouTube, Instagram and TikTok, never login or account pages, at human pace (100 videos/hour, 4 s apart; adjustable)
+- **Live watching:** the Guard approves every page *before* it opens: only YouTube and Instagram, never login or account pages, at human pace (100 videos/hour, 4 s apart; adjustable)
 - **Your data stays on your PC:** no accounts, no cloud, no tracking. The AI verdict runs on a local Ollama only, unless you add `--allow-remote-ai`
 - **Private dashboard:** a new secret link each time; other websites and other devices can't read it
 - **No secrets saved:** detects 10+ key/password/token formats; `radar.py audit` checks every run
@@ -88,7 +88,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 ---
 
 ## 🚀 Quick start (3 steps, no coding)
-**Needs:** Windows 10/11 or a Mac · about 2 GB free space · no GPU needed · [Claude](https://claude.ai/download) for the AI team
+**Needs:** Windows 10/11 or a Mac (Mac installer not fully tested yet) · about 2 GB free space · no GPU needed · [Claude](https://claude.ai/download) for the AI team
 
 1. **Download:** click the green **`<> Code`** button above → **Download ZIP** → right-click the file → **Extract All**.
 2. **Install:** open the folder and double-click **`INSTALL_WINDOWS.bat`** (Windows) or **`INSTALL_MAC.command`** (Mac). It installs Python and ffmpeg if missing (asks first).
@@ -124,6 +124,7 @@ Open Claude in the Reel Radar folder and type:
 | `python radar.py retention export.zip --video library/me/x.mp4` | Where viewers leave and why (YouTube Studio export) |
 | `python radar.py thumbs` | Score thumbnails in `library/<creator>/thumbnails/` |
 | `python radar.py stats-template` | Create `stats.csv` to add views (for outlier scores) |
+| `python radar.py hear on` / `hear --url URL` | Optional Instagram hearing (off by default; Windows) |
 | `python radar.py audit` | Security check: PASS / FAIL |
 | `python radar.py forget "name"` / `--all` | Delete analysis data (your videos stay) |
 
@@ -145,7 +146,6 @@ Open Claude in the Reel Radar folder and type:
 - [x] One-click installer + Claude plugin
 - [x] Retention-curve import from YouTube Studio exports
 - [x] Thumbnail analysis (contrast, clutter, text, phone-size legibility)
-- [x] Live mode: YouTube Shorts with live captions, Instagram Reels (visual notes)
-- [ ] Instagram Reels audio transcription
+- [x] Live mode: YouTube Shorts with live captions, Instagram Reels (visual notes + optional hearing)
 
 > ⚠️ For study only. Don't re-upload other creators' videos or copy their scripts. AI output is a draft: verify facts before posting.

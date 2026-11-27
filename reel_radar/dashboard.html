@@ -32,6 +32,7 @@ canvas{width:100%;height:56px;display:block;margin-top:12px;border-radius:8px;cu
 .legend{display:flex;gap:16px;color:var(--dim);font-size:14px;margin-top:6px;flex-wrap:wrap}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .facts{display:grid;gap:10px}
 .fact{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.fact:last-child{border:0}
+.vs{width:100%;border-collapse:collapse}.vs th,.vs td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}.vs td+td,.vs th+th{text-align:right}
 .fact .k{font-weight:600}.fact .v{color:var(--dim);font-size:14px}
 details{margin:0 22px 22px;max-width:1356px}details summary{cursor:pointer;color:var(--dim);font-size:14px;padding:8px 0}
 .log{white-space:pre-wrap;font:12px/1.5 ui-monospace,Consolas,monospace;color:var(--dim);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;max-height:260px;overflow-y:auto}
@@ -79,6 +80,11 @@ Reel Radar</h1>
    <h2>💡 What Claude noticed</h2><p class="sub">Green = strong · Yellow = could be better · Red = fix this</p>
    <div class="facts" id="facts"><span class="wait">Takeaways appear when the video is done.</span></div>
   </section>
+  <section class="card" id="vs" style="display:none">
+   <h2>🥊 You vs Them</h2><p class="sub">Your reels vs competitors Claude watched live (averages)</p>
+   <table class="vs"><thead><tr><th></th><th>You</th><th>Them</th></tr></thead><tbody id="vsb"></tbody></table>
+   <p id="vstip" style="margin:12px 0 0"></p>
+  </section>
  </div>
 </main>
 <details><summary>Technical details (optional) ▾</summary><div class="log" id="log"></div></details>
@@ -96,7 +102,7 @@ vid.addEventListener('play',()=>$('pp').textContent='⏸ Pause');vid.addEventLis
 function embed(u){let m;
  if(m=u.match(/instagram\.com\/(?:[\w.]+\/)?(?:reel|reels|p)\/([\w-]+)/))return 'https://www.instagram.com/reel/'+m[1]+'/embed/';
  if(m=u.match(/youtube\.com\/shorts\/([\w-]+)/)||u.match(/[?&]v=([\w-]+)/)||u.match(/youtu\.be\/([\w-]+)/))return 'https://www.youtube.com/embed/'+m[1]+'?enablejsapi=1&playsinline=1&mute=1&loop=1&playlist='+m[1]+'&origin='+encodeURIComponent(location.origin);
- if(m=u.match(/tiktok\.com\/.*video\/(\d+)/))return 'https://www.tiktok.com/embed/v2/'+m[1];return null}
+ return null}
 const yt=()=>/youtube\.com\/embed/.test($('web').src);
 function ytCmd(func){$('web').contentWindow?.postMessage(JSON.stringify({event:'command',func,args:[]}),'*')}
 window.addEventListener('message',e=>{if(!/youtube\.com$/.test(new URL(e.origin).hostname))return;let d;try{d=JSON.parse(e.data)}catch(x){return}
@@ -165,8 +171,24 @@ async function pick(id){if(id.startsWith('web:')){const r=(S.web_history||[]).fi
 function step(s){const n=s.status!=='running'?(s.progress[1]&&s.progress[0]>=s.progress[1]?4:0):s.analysis?3:(s.transcript||[]).length||/\[ears\]/.test((s.log||[]).slice(-1)[0]||'')?2:1;
  [...$('steps').children].forEach((e,i)=>e.className='step'+(i+1<n||n===4?' done':i+1===n?' now':''));
  const h=(s.history||[]).length;$('count').textContent=s.status==='running'&&s.progress[1]?`Video ${Math.min(s.progress[0]+1,s.progress[1])} of ${s.progress[1]}`:h?h+' video'+(h>1?'s':'')+' watched':''}
+// You vs Them: averages over live observations; mine = your own handle (observe --mine)
+function vsStats(rs){const n=rs.length,avg=f=>{const v=rs.map(f).filter(x=>x!=null&&!isNaN(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+ const nw=t=>(t||'').trim().split(/\s+/).filter(Boolean).length,num=v=>{const m=String(v||'').replace(/,/g,'').match(/([\d.]+)\s*([kKmM]?)/);return m?+m[1]*({k:1e3,m:1e6}[m[2].toLowerCase()]||1):null};
+ return {n,views:avg(r=>num(r.views)),text:avg(r=>r.hook_text?nw(r.hook_text):null),
+  spoken:avg(r=>(r.transcript||[]).length||r.hook_spoken?(((r.transcript||[])[0]||[0])[0]<=3||!!r.hook_spoken?100:0):null),
+  pace:avg(r=>{const t=r.transcript||[];if(t.length<2)return null;const d=t[t.length-1][0]+2;return t.reduce((a,x)=>a+nw(x[1]),0)/d}),
+  q:avg(r=>/\?/.test((r.hook_text||'')+((r.transcript||[])[0]||['',''])[1]+(r.hook_spoken||''))?100:0)}}
+function vsView(h){const me=h.filter(r=>r.mine),th=h.filter(r=>!r.mine);$('vs').style.display=me.length&&th.length?'block':'none';if(!me.length||!th.length)return;
+ const a=vsStats(me),b=vsStats(th),f=(v,d,u)=>v==null?'—':(+v).toLocaleString(undefined,{maximumFractionDigits:d})+(u||'');
+ const rows=[['Reels',a.n,b.n,0],['Views',a.views,b.views,0],['Words in text hook',a.text,b.text,1],['Speaks in first 3 s',a.spoken,b.spoken,0,'%'],['Speech pace (words/s)',a.pace,b.pace,1],['Hook asks a question',a.q,b.q,0,'%']];
+ $('vsb').innerHTML=rows.map(([k,x,y,d,u])=>`<tr><td>${k}</td><td>${f(x,d,u)}</td><td>${f(y,d,u)}</td></tr>`).join('');
+ const tips=[];if(a.spoken!=null&&b.spoken!=null&&b.spoken-a.spoken>=30)tips.push('They start talking sooner: speak in the first 3 seconds.');
+ if(a.q!=null&&b.q!=null&&b.q-a.q>=30)tips.push('More of their hooks ask a question: try one.');
+ if(a.pace&&b.pace&&b.pace/a.pace>=1.2)tips.push('They talk faster: tighten your script.');
+ if(a.text!=null&&b.text!=null&&a.text-b.text>=3)tips.push('Your text hooks are longer: cut to their length.');
+ $('vstip').textContent=tips.length?'💡 '+tips.join(' '):'✅ No big gap on these measures.'}
 function render(){if(!S)return;const s=S;const webNow=s.web&&s.status!=='running'&&(!s.video||s.web.t>(s.video.started||0));step(s);if(webNow&&!pinned)$('count').textContent='Watching live: '+(s.web_history||[]).length+' reel'+((s.web_history||[]).length>1?'s':'');
- $('log').textContent=s.log.join('\n');$('log').scrollTop=1e9;
+ vsView(s.web_history||[]);$('log').textContent=s.log.join('\n');$('log').scrollTop=1e9;
  const sel=$('pickv'),ids=(s.web_history||[]).map(r=>r.url).concat((s.history||[]).map(h=>h.id)).join();if(sel.dataset.ids!==ids){sel.dataset.ids=ids;const cur=sel.value;
   sel.innerHTML='<option value="">● Live: what Claude is watching now</option>'+(s.web_history||[]).map(r=>`<option value="web:${esc(r.url)}">🌐 @${esc(r.creator)} · ${esc([...(r.hook_spoken||r.hook_text||r.url)].slice(0,40).join(''))}</option>`).join('')+(s.history||[]).map(h=>`<option value="${esc(h.id)}">${esc(h.creator)} · ${esc(h.duration)}s${h.hook?' · "'+esc(h.hook.slice(0,40))+'"':''}</option>`).join('');sel.value=cur}
  if(!pinned&&webNow){showWeb(s.web);[...$('steps').children].forEach((e,i)=>e.className='step'+(i===0?' now':''))}

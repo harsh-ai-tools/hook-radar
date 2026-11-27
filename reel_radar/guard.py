@@ -17,7 +17,7 @@ LOG = OUT / "security_log.jsonl"
 VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".mkv"}
 MAX_VIDEO_BYTES = 2 * 1024 ** 3
 WATCH_SITES = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "instagram.com",
-               "www.instagram.com", "tiktok.com", "www.tiktok.com", "vm.tiktok.com"}
+               "www.instagram.com"}
 BLOCKED_PATH_WORDS = ("login", "accounts", "settings", "password", "direct/inbox", "checkout", "payments")
 BLOCKED_ACTIONS = {"download", "upload", "repost", "like", "follow", "unfollow", "comment",
                    "dm", "message", "login", "share", "save_to_device", "scrape_bulk"}
@@ -86,10 +86,13 @@ def norm_url(url):
     u = urlparse(url.strip())
     host = (u.hostname or "").lower().removeprefix("www.").removeprefix("m.")
     path = u.path.rstrip("/") or "/"
-    if host == "youtu.be":
-        host, path = "youtube.com", "/watch"; keep = f"v={u.path.strip('/')}"
-    else:
-        keep = "&".join(q for q in u.query.split("&") if q.startswith("v=")) if path == "/watch" else ""
+    keep = ""
+    vid = u.path.strip("/") if host == "youtu.be" else next((q[2:] for q in u.query.split("&") if q.startswith("v=")), "") if path == "/watch" else ""
+    if vid:                                          # one key per video: watch?v=ID / youtu.be/ID = shorts/ID
+        host, path = "youtube.com", f"/shorts/{vid}"
+    m = re.match(r"^(?:/[^/]+)?/reels?/([^/]+)$", path) if host == "instagram.com" else None
+    if m:                                            # /user/reel/ID, /reels/ID = /reel/ID
+        path = f"/reel/{m.group(1)}"
     return f"{u.scheme}://{host}{path}" + (f"?{keep}" if keep else "")
 
 
@@ -111,7 +114,7 @@ def check_url(url):
     if u.scheme != "https":
         return _log("url", url, False, "only https pages")
     if u.hostname not in WATCH_SITES:
-        return _log("url", url, False, "site not on the watch list (YouTube, Instagram, TikTok)")
+        return _log("url", url, False, "site not on the watch list (YouTube, Instagram)")
     if any(w in u.path.lower() for w in BLOCKED_PATH_WORDS):
         return _log("url", url, False, "account/login/settings pages are off-limits")
     return _log("url", norm_url(url), True, "ok")

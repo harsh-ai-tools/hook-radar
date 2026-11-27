@@ -1,7 +1,7 @@
 {
   "name": "reel-radar",
-  "version": "2.3.0",
-  "description": "Free, local creator intelligence: an AI team that studies your competitors' Shorts, Reels & TikToks and tells you what to make next. Made by Harsh Rajput.",
+  "version": "2.3.1",
+  "description": "Free, local creator intelligence: an AI team that studies your competitors' YouTube Shorts & Instagram Reels and tells you what to make next. Made by Harsh Rajput.",
   "author": {
     "name": "Harsh Rajput",
     "url": "https://github.com/harsh-ai-tools"
@@ -11,7 +11,6 @@
   "keywords": [
     "youtube-shorts",
     "instagram-reels",
-    "tiktok",
     "creator",
     "competitor-analysis"
   ],

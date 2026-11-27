@@ -264,7 +264,7 @@ def transcribe(video, size, gpu=False, language=None):
             _wm = WhisperModel(size, device="cpu", compute_type="int8")
             live.log("[ears] whisper on CPU")
     lang = language if language and language not in ("auto", "") else None
-    audio = load_audio(video)                        # decode with ffmpeg: no PyAV version problems
+    audio = video if hasattr(video, "dtype") else load_audio(video)   # array = live recording (never on disk)
 
     def run(model):
         segs, info = model.transcribe(audio, word_timestamps=True, vad_filter=True, language=lang,
@@ -413,7 +413,7 @@ def ctas(*texts):
     return sorted(found)
 
 
-PROMPT = """You analyse short-form videos (Shorts/Reels/TikToks) for a creator.
+PROMPT = """You analyse short-form videos (YouTube Shorts / Instagram Reels) for a creator.
 The image is a contact sheet of key frames (timestamps in yellow).
 Transcript: {tr}
 On-screen text: {ocr}
