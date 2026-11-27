@@ -343,14 +343,18 @@ def cmd_scout(a):
                      "Check the key is a YouTube Data API v3 key and today's free quota isn't used up.")
         except urllib.error.URLError as e:
             sys.exit(f"Could not reach YouTube ({e.reason}). Check your internet connection.")
-    items = api("search", part="snippet", q=p["niche"] + " shorts", type="channel", maxResults=15).get("items", [])
+    items = api("search", part="snippet", q=p["niche"] + " shorts", type="channel", maxResults=25).get("items", [])
     ids = ",".join(i["snippet"]["channelId"] for i in items)
     if not ids:
         print(f"No channels found for '{p['niche']}'. Try a broader niche in radar.json."); return
+    # quota: search = 100 units + channels = 1 unit of the free 10,000/day
     chans = api("channels", part="snippet,statistics", id=ids).get("items", [])
     have = {c["name"].lower() for c in p["competitors"]} | {s["name"].lower() for s in p["suggested"]}
+    chans.sort(key=lambda c: -int(c["statistics"].get("viewCount", 0)) / max(int(c["statistics"].get("videoCount", 1)), 1))
     for c in chans:
         st = c["statistics"]
+        if int(st.get("subscriberCount", 0)) < 1000 and not st.get("hiddenSubscriberCount"):
+            continue                                 # skip tiny/new channels: nothing to learn yet
         views_per_video = int(st.get("viewCount", 0)) / max(int(st.get("videoCount", 1)), 1)
         name = c["snippet"]["title"]
         if name.lower() not in have and int(st.get("videoCount", 0)) > 0:

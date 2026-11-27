@@ -100,6 +100,20 @@ Just want to see it work? Run `python radar.py demo` (15-second sample run, open
 **Claude Code plugin:** `/plugin marketplace add harsh-ai-tools/reel-radar` then `/plugin install reel-radar@harsh-ai-tools`.
 Developers: `git clone https://github.com/harsh-ai-tools/reel-radar.git`.
 
+## 🔑 Optional: YouTube API key (only for Scout)
+Scout finds competitors for you with YouTube's official, free API. You don't need it: Claude can also find competitors without a key.
+1. Go to [console.cloud.google.com](https://console.cloud.google.com/) and sign in with any Google account.
+2. Top bar → **Select a project → New project** → name it `reel-radar` → **Create**.
+3. Search **YouTube Data API v3** → open it → **Enable**.
+4. Left menu **APIs & Services → Credentials → Create credentials → API key**. Copy the key.
+5. Click the key → **API restrictions → Restrict key → YouTube Data API v3** → **Save** (so it only works for this).
+6. Save it on your PC (never paste it into chat or a file in this folder):
+   - **Windows:** Start → type **environment variables** → *Edit environment variables for your account* → **New** → name `YOUTUBE_API_KEY`, value = your key → OK.
+   - **Mac:** in Terminal: `echo 'export YOUTUBE_API_KEY="your-key"' >> ~/.zshrc`
+7. Close and reopen Claude (and any terminal), then run `python radar.py scout`.
+
+It's free: one Scout run uses about 1% of the daily free quota. The Guard checks that the key is never saved in Reel Radar's files.
+
 ## 💬 What to type in Claude
 Open Claude in the Reel Radar folder and type:
 - **`start`** (first time: setup wizard)
