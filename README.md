@@ -7,6 +7,20 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 
 ---
 
+## 🚀 Start in 3 clicks (no coding)
+**You need:** a Windows 10/11 PC or a Mac (Mac version not fully tested yet) · the free **[Claude desktop app](https://claude.ai/download)** (sign in with a free account) · about 2 GB free space. No coding, no GPU, no paid tools.
+
+1. **Download:** at the top of this page click the green **`<> Code`** button → **Download ZIP**. Then right-click the downloaded file → **Extract All** → **Extract**.
+2. **Install:** open the extracted folder and double-click **`INSTALL_WINDOWS.bat`** (Mac: **`INSTALL_MAC.command`**). Wait until it says **Done!** (a few minutes; it installs anything missing and asks first).
+   > Windows says *"Windows protected your PC"*? Click **More info → Run anyway**. Mac says *"can't be opened"*? **Right-click → Open → Open**.
+3. **Start:** double-click **`START_DASHBOARD.bat`** (Mac: **`START_DASHBOARD.command`**) to open your live dashboard. Then open the **Claude desktop app**, add the Reel Radar folder (**+ → Add folder**) and type **`start`**. Claude asks 3 simple questions and you're ready.
+
+Just want to see it work first? Type *"run the demo"* in Claude.
+
+<sub>Developers: `git clone https://github.com/harsh-ai-tools/reel-radar.git` · Claude Code plugin: `/plugin marketplace add harsh-ai-tools/reel-radar` then `/plugin install reel-radar@harsh-ai-tools`</sub>
+
+---
+
 ## ⚙️ How it works
 <p align="center"><img src="docs/how-it-works.png" alt="How Reel Radar works" width="100%"></p>
 
@@ -17,7 +31,7 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 **Playbook**: You vs Them, creator profiles and every video in one page
 <p align="center"><img src="docs/playbook.png" alt="Playbook report" width="100%"></p>
 
-<sub>Dashboard: real capture of Claude watching our own @historical_hq Reel live, with You vs Them. Playbook: demo videos generated for testing.</sub>
+<sub>Dashboard: real capture of Claude watching our own @historical_hq Short live, with You vs Them. Playbook: demo videos generated for testing.</sub>
 
 ---
 
@@ -86,19 +100,6 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 - **Delete anytime:** `python radar.py forget "creator"` or `python radar.py forget --all`
 
 ---
-
-## 🚀 Quick start (3 steps, no coding)
-**Needs:** Windows 10/11 or a Mac (Mac installer not fully tested yet) · about 2 GB free space · no GPU needed · [Claude](https://claude.ai/download) for the AI team
-
-1. **Download:** click the green **`<> Code`** button above → **Download ZIP** → right-click the file → **Extract All**.
-2. **Install:** open the folder and double-click **`INSTALL_WINDOWS.bat`** (Windows) or **`INSTALL_MAC.command`** (Mac). It installs Python and ffmpeg if missing (asks first).
-   > Windows says "protected your PC"? Click **More info → Run anyway**. Mac says "can't be opened"? **Right-click → Open → Open**.
-3. **Start:** double-click **`START_DASHBOARD.bat`** (Windows) or **`START_DASHBOARD.command`** (Mac). Put videos **you already have** in `library/me/` (yours) and `library/<their name>/` (competitors).
-
-Just want to see it work? Run `python radar.py demo` (15-second sample run, opens the dashboard).
-
-**Claude Code plugin:** `/plugin marketplace add harsh-ai-tools/reel-radar` then `/plugin install reel-radar@harsh-ai-tools`.
-Developers: `git clone https://github.com/harsh-ai-tools/reel-radar.git`.
 
 ## 🔭 Scout setup: find competitors (optional, 5 minutes)
 **No setup needed:** just ask Claude *"Scout competitors for my niche"*. It searches the web and shows you a list to approve.
