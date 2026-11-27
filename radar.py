@@ -316,13 +316,30 @@ def print_suggested(p):
         print(f" - {s['name']} [{s['platform']}] {s['handle']}: {s['why']}")
 
 
+def yt_key():
+    """YOUTUBE_API_KEY from this process, or (Windows) the saved user/system variable, so no restart is needed."""
+    key = os.environ.get("YOUTUBE_API_KEY")
+    if not key and os.name == "nt":
+        import winreg                                # user variable first, then system-wide
+        for hive, path in ((winreg.HKEY_CURRENT_USER, "Environment"),
+                           (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment")):
+            try:
+                with winreg.OpenKey(hive, path) as k:
+                    key = winreg.QueryValueEx(k, "YOUTUBE_API_KEY")[0]
+                    break
+            except OSError:
+                pass
+    return (key or "").strip()
+
+
 def cmd_scout(a):
     p = profile.load()
-    key = os.environ.get("YOUTUBE_API_KEY")
+    key = yt_key()
     if not key:
-        print("No YOUTUBE_API_KEY set. Two options:\n"
-              " 1) Ask Claude: 'scout competitors for my niche' (it searches and calls `radar.py suggest`)\n"
-              " 2) Get a free YouTube Data API key, set YOUTUBE_API_KEY, then run scout again.")
+        print("No YouTube key yet. Two options:\n"
+              " 1) No key needed: ask Claude 'scout competitors for my niche'\n"
+              " 2) Faster: get a free key (README → Scout setup), then double-click SET_YOUTUBE_KEY.bat (Windows)\n"
+              "    or SET_YOUTUBE_KEY.command (Mac) and run scout again.")
         return
     if not p.get("niche"):
         sys.exit("Set your niche first: python radar.py init")
@@ -437,6 +454,7 @@ def cmd_doctor():
         row(iu.find_spec(mod) is not None, name, inst)
     row(bool(iu.find_spec("rapidocr") or iu.find_spec("rapidocr_onnxruntime")), "OCR (on-screen text)",
         "optional: Claude can read text from the contact sheets instead", optional=True)
+    row(bool(yt_key()), "YouTube key for Scout", "optional: double-click SET_YOUTUBE_KEY.bat / .command (see README)", optional=True)
     row(Path("radar.json").exists(), "Your profile (radar.json)", "ask Claude 'start' or run: python radar.py init", optional=True)
     n = len(videos_in(profile.LIBRARY / "me")) if (profile.LIBRARY / "me").is_dir() else 0
     row(n > 0, f"Your videos in library/me/ ({n})", "drop a few of your videos into library/me/", optional=True)

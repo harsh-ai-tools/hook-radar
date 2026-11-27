@@ -100,27 +100,39 @@ Just want to see it work? Run `python radar.py demo` (15-second sample run, open
 **Claude Code plugin:** `/plugin marketplace add harsh-ai-tools/reel-radar` then `/plugin install reel-radar@harsh-ai-tools`.
 Developers: `git clone https://github.com/harsh-ai-tools/reel-radar.git`.
 
-## 🔑 Optional: YouTube API key (only for Scout)
-Scout finds competitors for you with YouTube's official, free API. You don't need it: Claude can also find competitors without a key.
-1. Go to [console.cloud.google.com](https://console.cloud.google.com/) and sign in with any Google account.
+## 🔭 Scout setup: find competitors (optional, 5 minutes)
+**No setup needed:** just ask Claude *"Scout competitors for my niche"*. It searches the web and shows you a list to approve.
+**Want faster, exact numbers (subscribers, views per video)?** Add a free YouTube key once:
+
+1. Open [console.cloud.google.com](https://console.cloud.google.com/) and sign in with any Google account.
 2. Top bar → **Select a project → New project** → name it `reel-radar` → **Create**.
-3. Search **YouTube Data API v3** → open it → **Enable**.
-4. Left menu **APIs & Services → Credentials → Create credentials → API key**. Copy the key.
-5. Click the key → **API restrictions → Restrict key → YouTube Data API v3** → **Save** (so it only works for this).
-6. Save it on your PC (never paste it into chat or a file in this folder):
-   - **Windows:** Start → type **environment variables** → *Edit environment variables for your account* → **New** → name `YOUTUBE_API_KEY`, value = your key → OK.
-   - **Mac:** in Terminal: `echo 'export YOUTUBE_API_KEY="your-key"' >> ~/.zshrc`
-7. Close and reopen Claude (and any terminal), then run `python radar.py scout`.
+3. Search bar → type **YouTube Data API v3** → open it → **Enable**.
+4. Left menu → **APIs & Services → Credentials → + Create credentials → API key** → **Copy** (it starts with `AIza`).
+5. *(Recommended)* Click the key → **API restrictions → Restrict key → YouTube Data API v3** → **Save**.
+6. In the Reel Radar folder, double-click **`SET_YOUTUBE_KEY.bat`** (Windows) or **`SET_YOUTUBE_KEY.command`** (Mac) and paste the key. It's hidden while you paste and saved only in your computer's settings, never in Reel Radar's files.
+7. Ask Claude *"Scout competitors for my niche"* (or run `python radar.py scout`). Approve the ones you like.
 
-It's free: one Scout run uses about 1% of the daily free quota. The Guard checks that the key is never saved in Reel Radar's files.
+Check it worked: `python radar.py doctor` shows **✅ YouTube key for Scout**. It's free: one Scout run uses about 1% of the daily free quota. Never paste the key into the chat.
 
-## 💬 What to type in Claude
-Open Claude in the Reel Radar folder and type:
-- **`start`** (first time: setup wizard)
-- *"Analyse my videos and my competitors"*
-- *"Why is @creator growing? Give me my next video idea"*
-- *"Write the script for that idea"*
-- *"Check my draft before I post"*
+## 💬 How to use it (what to type in Claude)
+**First time:** open Claude in the Reel Radar folder (or install the plugin) and type **`start`**: 3 questions and you're set up. Double-click **`START_DASHBOARD`** to watch Claude work live.
+
+Then just type plain English:
+
+| Goal | Type this |
+|---|---|
+| Find competitors | *"Scout competitors for my niche"* |
+| Study YouTube | *"Watch the latest 5 Shorts from @creator live"* |
+| Study Instagram | *"Watch these Reels: [paste links]"* or *"Watch @creator's last 3 Reels"* |
+| Hear Instagram audio | *"Turn on Instagram hearing and listen to this Reel"* (Windows) |
+| Compare | *"Watch 3 of my own Reels too and show You vs Them"* |
+| Get ideas | *"Why is @creator growing? Give me my next video idea"* |
+| Create | *"Write the script for that idea"* → *"Check my draft before I post"* |
+
+**Do I need to log in?**
+- **YouTube:** no. Public Shorts and their captions work without an account.
+- **Instagram:** yes, once, by **you**. Instagram hides most Reels from logged-out visitors, so sign in to Instagram yourself in the Claude app's built-in browser. Claude never types passwords or opens login pages, and only watches (no likes, follows, comments or downloads).
+- Live mode needs the **Claude desktop app** (it uses the app's built-in browser).
 
 ## 🧰 Commands
 | Command | What it does |
