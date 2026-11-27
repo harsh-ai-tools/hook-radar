@@ -120,7 +120,7 @@ function showWeb(r){const src=embed(r.url||'');webMode(true);shown='web:'+r.url;
  segs=r.transcript||[];
  $('words').innerHTML=segs.length?segs.map((s,i)=>`<span id="s${i}" title="${s[0]}s">${esc(s[1])}</span>`).join(' '):r.hook_spoken?'<span>'+esc(r.hook_spoken)+'</span>':'<span class="wait">No captions on this platform. Claude notes the spoken hook when it can.</span>';words=[];curve=[];audio={};
  if(!r.hook_spoken&&segs.length)r.hook_spoken=segs.filter(s=>s[0]<3).map(s=>s[1]).join(' ');
- const out=[row('Spoken hook',r.hook_spoken?B('g','Yes'):B('r','None noted'),r.hook_spoken?'"'+r.hook_spoken+'"':''),
+ const out=[row('Spoken hook',(r.hook_spoken||(r.transcript||[]).length)?B('g','Yes'):B('n','Not heard'),r.hook_spoken?'"'+r.hook_spoken+'"':(r.transcript||[]).length?'"'+r.transcript.filter(x=>x[0]<=3).map(x=>x[1]).join(' ')+'"':'No captions on this video. Turn on hearing to capture it.'),
   row('Text hook',r.hook_text?B('g','Yes'):B('y','No text on screen'),r.hook_text?'"'+r.hook_text+'"':''),
   row('Visual hook',r.visual_hook?B('g','Yes'):B('n','Not noted'),r.visual_hook||'')];
  if(r.views)out.push(row('Views',B('n',Number(r.views).toLocaleString()),''));
