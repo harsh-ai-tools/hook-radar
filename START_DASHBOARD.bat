@@ -1,5 +1,5 @@
 @echo off
-rem Double-click me to start Reel Radar.
+rem Double-click me to start HookRadar.
 cd /d "%~dp0"
 if not exist .venv\Scripts\python.exe ( echo Run INSTALL_WINDOWS.bat first. & pause & exit /b 1 )
 if not exist radar.json .venv\Scripts\python radar.py init

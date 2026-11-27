@@ -10,7 +10,7 @@ labels: bug
 
 **Your computer:** Windows 10 / Windows 11 / Mac (which chip?) / Linux
 
-**Doctor output** — open the Reel Radar folder, run `python radar.py doctor` (or ask Claude "run doctor") and paste the result:
+**Doctor output** — open the HookRadar folder, run `python radar.py doctor` (or ask Claude "run doctor") and paste the result:
 ```
 
 ```

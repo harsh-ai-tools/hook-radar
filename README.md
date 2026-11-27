@@ -1,7 +1,8 @@
-<p align="center"><img src="docs/banner.png" alt="Reel Radar" width="100%"></p>
+<p align="center"><img src="docs/banner.png" alt="HookRadar" width="100%"></p>
 
-<h1 align="center"><img src="docs/logo.svg" width="40" align="top"> Reel Radar</h1>
-<p align="center"><b>A free, local AI team that studies your competitors' YouTube Shorts & Instagram Reels and tells you exactly what to make next.</b><br>
+<h1 align="center"><img src="docs/logo.svg" width="40" align="top"> HookRadar</h1>
+<p align="center"><b>Free AI that studies your competitors' Instagram Reels & YouTube Shorts and shows you why their hooks win.</b><br>
+The AI competitor & hook analyzer for Instagram Reels and YouTube Shorts: see what makes their videos work, then make yours better.<br>
 Runs 100% on your PC · never downloads videos · no paid APIs · works with Claude</p>
 <p align="center"><i>Made by Harsh Rajput · MIT License</i></p>
 
@@ -13,16 +14,16 @@ Runs 100% on your PC · never downloads videos · no paid APIs · works with Cla
 1. **Download:** at the top of this page click the green **`<> Code`** button → **Download ZIP**. Then right-click the downloaded file → **Extract All** → **Extract**.
 2. **Install:** open the extracted folder and double-click **`INSTALL_WINDOWS.bat`** (Mac: **`INSTALL_MAC.command`**). Wait until it says **Done!** (a few minutes; it installs anything missing and asks first).
    > Windows says *"Windows protected your PC"*? Click **More info → Run anyway**. Mac says *"can't be opened"*? **Right-click → Open → Open**.
-3. **Start:** double-click **`START_DASHBOARD.bat`** (Mac: **`START_DASHBOARD.command`**) to open your live dashboard. Then open the **Claude desktop app**, add the Reel Radar folder (**+ → Add folder**) and type **`start`**. Claude asks 3 simple questions and you're ready.
+3. **Start:** double-click **`START_DASHBOARD.bat`** (Mac: **`START_DASHBOARD.command`**) to open your live dashboard. Then open the **Claude desktop app**, add the HookRadar folder (**+ → Add folder**) and type **`start`**. Claude asks 3 simple questions and you're ready.
 
 Just want to see it work first? Type *"run the demo"* in Claude.
 
-<sub>Developers: `git clone https://github.com/harsh-ai-tools/reel-radar.git` · Claude Code plugin: `/plugin marketplace add harsh-ai-tools/reel-radar` then `/plugin install reel-radar@harsh-ai-tools`</sub>
+<sub>Developers: `git clone https://github.com/harsh-ai-tools/hook-radar.git` · Claude Code plugin: `/plugin marketplace add harsh-ai-tools/hook-radar` then `/plugin install hook-radar@harsh-ai-tools`</sub>
 
 ---
 
 ## ⚙️ How it works
-<p align="center"><img src="docs/how-it-works.png" alt="How Reel Radar works" width="100%"></p>
+<p align="center"><img src="docs/how-it-works.png" alt="How HookRadar works" width="100%"></p>
 
 ## 📸 See it in action
 **Live dashboard**: calm, plain-English cards · 4-step progress bar · 🔊 Speaker / Mute button · Light / Dark mode · technical log tucked under *Technical details* · 📚 replay any video it already watched
@@ -106,17 +107,17 @@ Just want to see it work first? Type *"run the demo"* in Claude.
 **Want faster, exact numbers (subscribers, views per video)?** Add a free YouTube key once:
 
 1. Open [console.cloud.google.com](https://console.cloud.google.com/) and sign in with any Google account.
-2. Top bar → **Select a project → New project** → name it `reel-radar` → **Create**.
+2. Top bar → **Select a project → New project** → name it `hook-radar` → **Create**.
 3. Search bar → type **YouTube Data API v3** → open it → **Enable**.
 4. Left menu → **APIs & Services → Credentials → + Create credentials → API key** → **Copy** (it starts with `AIza`).
 5. *(Recommended)* Click the key → **API restrictions → Restrict key → YouTube Data API v3** → **Save**.
-6. In the Reel Radar folder, double-click **`SET_YOUTUBE_KEY.bat`** (Windows) or **`SET_YOUTUBE_KEY.command`** (Mac) and paste the key. It's hidden while you paste and saved only in your computer's settings, never in Reel Radar's files.
+6. In the HookRadar folder, double-click **`SET_YOUTUBE_KEY.bat`** (Windows) or **`SET_YOUTUBE_KEY.command`** (Mac) and paste the key. It's hidden while you paste and saved only in your computer's settings, never in HookRadar's files.
 7. Ask Claude *"Scout competitors for my niche"* (or run `python radar.py scout`). Approve the ones you like.
 
 Check it worked: `python radar.py doctor` shows **✅ YouTube key for Scout**. It's free: one Scout run uses about 1% of the daily free quota. Never paste the key into the chat.
 
 ## 💬 How to use it (what to type in Claude)
-**First time:** open Claude in the Reel Radar folder (or install the plugin) and type **`start`**: 3 questions and you're set up. Double-click **`START_DASHBOARD`** to watch Claude work live.
+**First time:** open Claude in the HookRadar folder (or install the plugin) and type **`start`**: 3 questions and you're set up. Double-click **`START_DASHBOARD`** to watch Claude work live.
 
 Then just type plain English:
 
@@ -163,7 +164,7 @@ Then just type plain English:
 - **Slow on an old laptop** → add `--whisper base`. No GPU needed.
 - **Dashboard didn't open** → it picks the next free port by itself; copy the link printed in the window.
 - **No on-screen text found** → OCR is optional; Claude reads the text from the contact sheets instead.
-- Still stuck? [Open a bug report](https://github.com/harsh-ai-tools/reel-radar/issues/new?template=bug_report.md) with your `doctor` output.
+- Still stuck? [Open a bug report](https://github.com/harsh-ai-tools/hook-radar/issues/new?template=bug_report.md) with your `doctor` output.
 
 ## 🗺️ Roadmap
 - [x] Eyes, ears, live dashboard, You vs Them

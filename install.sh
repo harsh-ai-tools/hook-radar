@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Reel Radar installer for macOS / Linux (made by Harsh Rajput)
+# HookRadar installer for macOS / Linux (made by Harsh Rajput)
 set -e
 cd "$(dirname "$0")"
-echo "== Reel Radar installer: free and local, nothing is uploaded =="
+echo "== HookRadar installer: free and local, nothing is uploaded =="
 command -v python3 >/dev/null || { echo "Please install Python 3.10-3.13 first."; exit 1; }
 python3 -c 'import sys; sys.exit(0 if (3,10) <= sys.version_info[:2] <= (3,13) else 1)' \
-  || { echo "Reel Radar needs Python 3.10 to 3.13 (you have $(python3 -V))."; exit 1; }
+  || { echo "HookRadar needs Python 3.10 to 3.13 (you have $(python3 -V))."; exit 1; }
 if ! command -v ffmpeg >/dev/null; then
   echo "ffmpeg not found."
   if command -v brew >/dev/null; then read -p "Install with Homebrew? [y/N] " y; [ "$y" = y ] && brew install ffmpeg

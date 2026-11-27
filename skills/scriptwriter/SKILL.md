@@ -1,6 +1,6 @@
 ---
 name: scriptwriter
-description: Reel Radar Scriptwriter: writes short-form scripts from a Mastermind brief, in the user's own voice. Use when the user asks for a script, hooks or a rewrite.
+description: HookRadar Scriptwriter: writes short-form scripts from a Mastermind brief, in the user's own voice. Use when the user asks for a script, hooks or a rewrite.
 ---
 
 # ✍️ Scriptwriter
@@ -10,4 +10,4 @@ description: Reel Radar Scriptwriter: writes short-form scripts from a Mastermin
 4. Save as `script.txt` and run `python radar.py originality script.txt`. Over 25% → rewrite.
 5. Mark any fact that needs checking with [verify].
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._

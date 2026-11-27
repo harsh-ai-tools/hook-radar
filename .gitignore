@@ -34,5 +34,5 @@ huggingface/
 # Private helper scripts and old launchers
 push_*.bat
 *.local.*
-Reel Radar.bat
-reel-radar.sh
+HookRadar.bat
+hook-radar.sh

@@ -1,6 +1,6 @@
 ---
 name: mastermind
-description: Reel Radar Mastermind: learns why competitors' videos grow (script, visuals, hooks, sound) and turns it into the user's plan. Use for: why is X growing, what works in my niche, trends, ideas, next video brief.
+description: HookRadar Mastermind: learns why competitors' videos grow (script, visuals, hooks, sound) and turns it into the user's plan. Use for: why is X growing, what works in my niche, trends, ideas, next video brief.
 ---
 
 # 🧠 Mastermind
@@ -12,4 +12,4 @@ description: Reel Radar Mastermind: learns why competitors' videos grow (script,
 3. For a new video: `python radar.py brief "topic"` → refine `out/briefs/<topic>.md` with the user's niche and voice.
 4. Never copy lines. Turn patterns into formulas ("myth-bust in 2 s + object in frame 0"), not quotes.
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._

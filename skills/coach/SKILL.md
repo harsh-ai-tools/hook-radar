@@ -1,6 +1,6 @@
 ---
 name: coach
-description: Reel Radar Coach / Algorithm Learner: after the user posts, compares what we predicted with real results and teaches the system. Use when the user shares results, analytics or screenshots of a posted video.
+description: HookRadar Coach / Algorithm Learner: after the user posts, compares what we predicted with real results and teaches the system. Use when the user shares results, analytics or screenshots of a posted video.
 ---
 
 # 📈 Coach (algorithm learner)
@@ -10,4 +10,4 @@ description: Reel Radar Coach / Algorithm Learner: after the user posts, compare
 4. Write 1–3 lessons to `out/learnings.md` (append, dated) and apply them to the next brief.
 5. Weekly: `python radar.py weekly` and walk the user through it.
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._

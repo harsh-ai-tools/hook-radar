@@ -1,5 +1,5 @@
 #!/bin/bash
-# Reel Radar: save your YouTube API key for Scout (hidden input, saved in ~/.zshrc only).
+# HookRadar: save your YouTube API key for Scout (hidden input, saved in ~/.zshrc only).
 echo "Paste your YouTube API key (from README: Scout setup) and press Enter. It stays hidden."
 read -rs KEY; echo
 if [[ ! "$KEY" =~ ^AIza[0-9A-Za-z_-]{35}$ ]]; then echo "That does not look like a YouTube API key (starts with AIza, 39 characters). Nothing saved."; read -n1 -p "Press any key..."; exit 1; fi

@@ -1,6 +1,6 @@
 ---
 name: youtube-manager
-description: Reel Radar YouTube Manager: packaging for YouTube Shorts and long-form: titles, descriptions, keywords, hashtags, pinned comment, thumbnails. Use when the user is about to upload to YouTube.
+description: HookRadar YouTube Manager: packaging for YouTube Shorts and long-form: titles, descriptions, keywords, hashtags, pinned comment, thumbnails. Use when the user is about to upload to YouTube.
 ---
 
 # ▶️ YouTube Manager
@@ -12,4 +12,4 @@ For each upload give:
 - Suggest the related video / playlist to link.
 Use trending words from `python radar.py trends` only when they truly fit.
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._

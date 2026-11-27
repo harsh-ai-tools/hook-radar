@@ -1,1 +1,1 @@
-Drop video files here (your own videos). Reel Radar only reads videos already on your PC; it never downloads anything.
+Drop video files here (your own videos). HookRadar only reads videos already on your PC; it never downloads anything.

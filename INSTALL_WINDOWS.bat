@@ -1,10 +1,10 @@
 @echo off
 setlocal
-title Reel Radar installer
+title HookRadar installer
 cd /d "%~dp0"
 echo.
 echo  ==============================================
-echo    Reel Radar installer  (made by Harsh Rajput)
+echo    HookRadar installer  (made by Harsh Rajput)
 echo    Free and local. Nothing is uploaded.
 echo  ==============================================
 echo.
@@ -21,7 +21,7 @@ if not defined PY (
   pause
   exit /b 0
 ) else ( echo [1/4] Python found: %PY% )
-%PY% -c "import sys; sys.exit(0 if (3,10) <= sys.version_info[:2] <= (3,13) else 1)" || ( echo Reel Radar needs Python 3.10 to 3.13. Please install Python 3.12 from python.org. & pause & exit /b 1 )
+%PY% -c "import sys; sys.exit(0 if (3,10) <= sys.version_info[:2] <= (3,13) else 1)" || ( echo HookRadar needs Python 3.10 to 3.13. Please install Python 3.12 from python.org. & pause & exit /b 1 )
 where ffmpeg >nul 2>nul
 if errorlevel 1 (
   echo [2/4] ffmpeg not found.
@@ -30,7 +30,7 @@ if errorlevel 1 (
   winget install -e --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
   echo NOTE: ffmpeg is installed. It works in NEW windows, so the launcher will find it.
 ) else ( echo [2/4] ffmpeg found. )
-echo [3/4] Installing Reel Radar packages (first time takes a few minutes)...
+echo [3/4] Installing HookRadar packages (first time takes a few minutes)...
 %PY% -m venv .venv || ( echo Could not create virtual environment & pause & exit /b 1 )
 call .venv\Scripts\python -m pip install --upgrade pip >nul
 call .venv\Scripts\python -m pip install -r requirements.txt || ( echo Package install failed & pause & exit /b 1 )
@@ -45,7 +45,7 @@ if not errorlevel 1 (
 )
 if defined WANTGPU (
   echo Installing GPU speed-up...
-  call .venv\Scripts\python -m pip install -r requirements-gpu.txt && set "GPUFLAG= --gpu" || echo GPU speed-up failed: Reel Radar will use the CPU.
+  call .venv\Scripts\python -m pip install -r requirements-gpu.txt && set "GPUFLAG= --gpu" || echo GPU speed-up failed: HookRadar will use the CPU.
 )
 echo [4/4] Connecting the AI team to Claude...
 call .venv\Scripts\python radar.py connect

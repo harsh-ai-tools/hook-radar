@@ -1,5 +1,5 @@
-"""Reel Radar Security Hook: blocks unsafe tool calls inside a Reel Radar folder. Runs locally, 0 tokens.
-Exit 2 = blocked (Claude sees the reason). Outside a Reel Radar folder it does nothing."""
+"""HookRadar Security Hook: blocks unsafe tool calls inside a HookRadar folder. Runs locally, 0 tokens.
+Exit 2 = blocked (Claude sees the reason). Outside a HookRadar folder it does nothing."""
 import json, os, re, sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -14,15 +14,15 @@ def main():
         text = raw.decode("utf-16") if raw[:2] in (b"\xff\xfe", b"\xfe\xff") else raw.decode("utf-8-sig", "ignore")
         d = json.loads(text.strip("\x00 \r\n"))
         root = Path(d.get("cwd") or ".")
-        if not (root / "reel_radar" / "guard.py").is_file():
+        if not (root / "hook_radar" / "guard.py").is_file():
             return 0
         sys.path.insert(0, str(root))
-        from reel_radar import guard
+        from hook_radar import guard
         i = d.get("tool_input") or {}
         if d.get("tool_name") == "Bash":
             if DOWNLOADERS.search(i.get("command", "")):
                 guard.check_action("download")
-                return block("Reel Radar is view-only: downloading videos is blocked. Use videos already in library/.")
+                return block("HookRadar is view-only: downloading videos is blocked. Use videos already in library/.")
             return 0
         url = str(i.get("url") or "")
         if not url.startswith("http") or urlparse(url).hostname in guard.LOCAL_HOSTS:

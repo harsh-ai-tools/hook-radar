@@ -36,7 +36,7 @@ def init(niche=None, language=None, platforms=None):
         (LIBRARY / p["me"]["name"]).mkdir(parents=True, exist_ok=True)
         print(f"Saved radar.json (niche: {niche}). Put your videos in library/me/")
         return p
-    print("\n=== Reel Radar setup ===  (press Enter to keep the value in brackets)\n")
+    print("\n=== HookRadar setup ===  (press Enter to keep the value in brackets)\n")
     p["niche"] = ask("Your niche in a few words (e.g. 'animated history shorts')", p["niche"])
     p["language"] = ask("Main language of your videos (en, hi, pa, ...)", p["language"])
     plats = ask("Platforms (comma list: youtube_shorts, instagram_reels, youtube_long)",

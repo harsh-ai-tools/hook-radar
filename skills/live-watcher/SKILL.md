@@ -1,6 +1,6 @@
 ---
 name: live-watcher
-description: Reel Radar Live Watcher: watches competitor Reels/Shorts live in the user's browser, view-only, so the user can see what the AI sees. Use when the user asks to watch Instagram/YouTube live or study videos without files.
+description: HookRadar Live Watcher: watches competitor Reels/Shorts live in the user's browser, view-only, so the user can see what the AI sees. Use when the user asks to watch Instagram/YouTube live or study videos without files.
 ---
 
 # 👀 Live Watcher (eyes in the browser)
@@ -16,4 +16,4 @@ description: Reel Radar Live Watcher: watches competitor Reels/Shorts live in th
 5. **You vs Them**: also observe 2-3 of the user's own reels with `--mine` (or set their handles in `radar.json` → `me.handles`); the dashboard then compares them with the competitors.
 6. Hand the observations to the Mastermind.
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._

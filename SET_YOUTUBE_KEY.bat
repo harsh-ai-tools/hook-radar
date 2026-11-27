@@ -1,5 +1,5 @@
 @echo off
-title Reel Radar: save YouTube key
+title HookRadar: save YouTube key
 echo.
 echo  Paste your YouTube API key (from README: Scout setup) and press Enter.
 echo  It stays hidden, and is saved only in your Windows user settings.

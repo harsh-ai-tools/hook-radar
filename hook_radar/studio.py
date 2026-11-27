@@ -261,7 +261,7 @@ def _thumb_page(out, res, vs, lib):
         f"<td>{''.join(f'<span style=background:{c}>&nbsp;&nbsp;&nbsp;</span>' for c in r['palette'])}</td>"
         f"<td>{'<br>'.join(e(x) for x in r['fixes'])}</td></tr>" for r in sorted(res, key=lambda r: -r["score"]))
     vrows = "".join(f"<tr><td>{e(v['metric'])}</td><td>{e(v['you'])}</td><td>{e(v['competitors'])}</td></tr>" for v in vs)
-    (out / "thumbnails.html").write_text(f"""<!doctype html><meta charset=utf-8><title>Reel Radar Thumbnails</title>
+    (out / "thumbnails.html").write_text(f"""<!doctype html><meta charset=utf-8><title>HookRadar Thumbnails</title>
 <style>body{{font:14px system-ui;margin:20px;background:#0d1117;color:#e6edf3}}table{{border-collapse:collapse;width:100%}}
 td,th{{border:1px solid #30363d;padding:6px;vertical-align:top}}th{{background:#161b22}}</style>
 <h1>🖼️ Thumbnail check</h1><h2>🆚 You vs Them (medians)</h2>

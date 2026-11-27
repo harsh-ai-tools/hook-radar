@@ -1,12 +1,12 @@
 {
-  "name": "reel-radar",
-  "version": "2.3.1",
-  "description": "Free, local creator intelligence: an AI team that studies your competitors' YouTube Shorts & Instagram Reels and tells you what to make next. Made by Harsh Rajput.",
+  "name": "hook-radar",
+  "version": "2.4.0",
+  "description": "HookRadar: free, local AI competitor & hook analyzer for Instagram Reels and YouTube Shorts. Studies competitors' videos, explains why their hooks win, and tells you what to make next. Made by Harsh Rajput.",
   "author": {
     "name": "Harsh Rajput",
     "url": "https://github.com/harsh-ai-tools"
   },
-  "homepage": "https://github.com/harsh-ai-tools/reel-radar",
+  "homepage": "https://github.com/harsh-ai-tools/hook-radar",
   "license": "MIT",
   "keywords": [
     "youtube-shorts",

@@ -1,6 +1,6 @@
 ---
 name: radar-setup
-description: Reel Radar first-run wizard. Use when the user types "start", "set up Reel Radar", is new, or radar.json is missing.
+description: HookRadar first-run wizard. Use when the user types "start", "set up HookRadar", is new, or radar.json is missing.
 ---
 
 # 🚀 First-run wizard

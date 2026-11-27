@@ -138,7 +138,7 @@ def was_approved(url, within=900):
 def check_action(action):
     a = action.lower().strip()
     if a in BLOCKED_ACTIONS:
-        return _log("action", a, False, "Reel Radar is view-only: no downloads, uploads, likes, follows, comments or DMs")
+        return _log("action", a, False, "HookRadar is view-only: no downloads, uploads, likes, follows, comments or DMs")
     return _log("action", a, True, "ok")
 
 

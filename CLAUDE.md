@@ -1,4 +1,4 @@
-# Reel Radar (for Claude)
+# HookRadar (for Claude)
 Local, free creator-intelligence tool. Python does all the maths (0 tokens); Claude only reads small summaries and talks to the user.
 
 ## Hard rules
@@ -20,4 +20,4 @@ Local, free creator-intelligence tool. Python does all the maths (0 tokens); Cla
 watch · precheck VIDEO · originality FILE · brief TOPIC · trends · weekly · thumbs · retention CSV · scout · audit · doctor · demo · dashboard
 
 ## Code map (only if fixing bugs)
-radar.py (CLI) · reel_radar/engine.py (eyes+ears) · mastermind.py (patterns, briefs, precheck) · report.py (playbook, summary) · guard.py (security) · server.py (dashboard) · studio.py (retention, thumbs)
+radar.py (CLI) · hook_radar/engine.py (eyes+ears) · mastermind.py (patterns, briefs, precheck) · report.py (playbook, summary) · guard.py (security) · server.py (dashboard) · studio.py (retention, thumbs)

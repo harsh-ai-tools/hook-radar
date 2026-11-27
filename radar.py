@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-📡 Reel Radar: free, local creator intelligence. Made by Harsh Rajput · MIT.
+📡 HookRadar: free, local creator intelligence. Made by Harsh Rajput · MIT.
 Watches videos ALREADY on your PC (never downloads), learns from competitors,
 and tells you exactly what to improve.
 
@@ -22,7 +22,7 @@ for _s in (sys.stdout, sys.stderr):                  # Windows consoles: never c
     except Exception:
         pass
 
-from reel_radar import engine, guard, live, mastermind, profile, report, server, studio
+from hook_radar import engine, guard, live, mastermind, profile, report, server, studio
 
 OUT = Path("out")
 
@@ -277,7 +277,7 @@ def cmd_thumbs(a):
 
 
 def cmd_forget(a):
-    """Delete Reel Radar's analysis data (your videos in library/ are never touched)."""
+    """Delete HookRadar's analysis data (your videos in library/ are never touched)."""
     target = "ALL analysis data" if a.all else f"all analysis data for '{a.creator}'"
     if not a.yes and input(f"Delete {target}? This can't be undone. Type yes: ").strip().lower() != "yes":
         print("Cancelled."); return
@@ -429,12 +429,12 @@ def cmd_connect(a):
     n = 0
     for sk in sorted(Path("skills").glob("*/SKILL.md")):
         text = sk.read_text("utf-8").replace("(the one with `radar.py`)", f"(`{here}`)")
-        d = dest / f"reel-radar-{sk.parent.name}"
+        d = dest / f"hook-radar-{sk.parent.name}"
         d.mkdir(parents=True, exist_ok=True)
-        (d / "SKILL.md").write_text(text.replace(f"name: {sk.parent.name}", f"name: reel-radar-{sk.parent.name}", 1), "utf-8")
+        (d / "SKILL.md").write_text(text.replace(f"name: {sk.parent.name}", f"name: hook-radar-{sk.parent.name}", 1), "utf-8")
         n += 1
     print(f"Connected {n} team members to Claude in {dest}")
-    print("Restart Claude, then just ask: \"Reel Radar, analyse my competitors\"")
+    print("Restart Claude, then just ask: \"HookRadar, analyse my competitors\"")
 
 
 def cmd_doctor():
@@ -447,7 +447,7 @@ def cmd_doctor():
         print(("✅ " if good else ("➖ " if optional else "❌ ")) + name + ("" if good else f"  →  {fix}"))
     inst = "double-click INSTALL_WINDOWS.bat (Windows) or INSTALL_MAC.command (Mac)"
     row((3, 10) <= sys.version_info[:2] <= (3, 13), f"Python {sys.version.split()[0]}", "install Python 3.12 from python.org, then run the installer again")
-    row(sys.prefix != sys.base_prefix or Path(".venv").is_dir(), "Reel Radar environment (.venv)", inst)
+    row(sys.prefix != sys.base_prefix or Path(".venv").is_dir(), "HookRadar environment (.venv)", inst)
     row(bool(shutil.which("ffmpeg")), "ffmpeg (reads videos)", inst)
     row(bool(shutil.which("ffprobe")), "ffprobe (video info)", inst)
     for mod, name in (("faster_whisper", "Whisper (speech to text)"), ("numpy", "numpy"), ("PIL", "Pillow (images)")):
@@ -485,7 +485,7 @@ def cmd_demo(a):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="📡 Reel Radar: local creator intelligence (Made by Harsh Rajput)")
+    ap = argparse.ArgumentParser(description="📡 HookRadar: AI competitor & hook analyzer for Instagram Reels and YouTube Shorts (Made by Harsh Rajput)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     ini = sub.add_parser("init", help="set niche, platforms, handles, competitors")
     ini.add_argument("--niche"); ini.add_argument("--language"); ini.add_argument("--platforms")
@@ -580,7 +580,7 @@ def main():
 
 def friendly(e):
     if isinstance(e, ModuleNotFoundError):
-        return f"A part of Reel Radar is missing ({e.name}). Fix: run the installer again (INSTALL_WINDOWS.bat / INSTALL_MAC.command)."
+        return f"A part of HookRadar is missing ({e.name}). Fix: run the installer again (INSTALL_WINDOWS.bat / INSTALL_MAC.command)."
     if isinstance(e, PermissionError):
         return f"Can't open {e.filename}: close it in other programs (or check folder permissions) and try again."
     if isinstance(e, FileNotFoundError):

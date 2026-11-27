@@ -1,6 +1,6 @@
 ---
 name: radar-check
-description: Reel Radar pre-post check. Use when the user has a draft video or script and asks "is this ready?", "check my video", "is my script copied?".
+description: HookRadar pre-post check. Use when the user has a draft video or script and asks "is this ready?", "check my video", "is my script copied?".
 ---
 
 # ✅ Pre-post check
@@ -9,4 +9,4 @@ description: Reel Radar pre-post check. Use when the user has a draft video or s
 - Thumbnail: put it in `library/me/thumbnails/`, run `python radar.py thumbs`.
 Report in ≤5 lines: verdict, score, fixes.
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows)._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows)._

@@ -1,6 +1,6 @@
 ---
 name: instagram-manager
-description: Reel Radar Instagram Manager: Reels packaging and growth: caption, hashtags, cover, posting, collabs, funnel to other platforms. Use when the user is about to post a Reel or asks about Instagram growth.
+description: HookRadar Instagram Manager: Reels packaging and growth: caption, hashtags, cover, posting, collabs, funnel to other platforms. Use when the user is about to post a Reel or asks about Instagram growth.
 ---
 
 # 📸 Instagram Manager
@@ -13,4 +13,4 @@ For each Reel give:
 - Growth: suggest collab posts with approved competitors of similar size, and a funnel line to YouTube if relevant.
 Use `out/observations.jsonl` and patterns from Instagram competitors when available.
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._

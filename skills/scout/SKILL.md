@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Reel Radar Scout: finds the right competitors for the user's niche. Use when the user asks who to compare with, to find competitors, or on first setup.
+description: HookRadar Scout: finds the right competitors for the user's niche. Use when the user asks who to compare with, to find competitors, or on first setup.
 ---
 
 # 🔭 Scout
@@ -12,4 +12,4 @@ Goal: 5–10 creators worth learning from: **same niche, similar or slightly big
 4. Show the list and ask the user which to approve → `python radar.py approve "NAME"`. Never approve on their behalf.
 5. Remind them: put videos they already have of each creator in `library/<name>/` (no downloading).
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows). Rules: see the `radar` skill._

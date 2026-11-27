@@ -1,5 +1,5 @@
 """
-Reel Radar engine: watches LOCAL videos only (never downloads).
+HookRadar engine: watches LOCAL videos only (never downloads).
 Eyes  = scene cuts, key frames, contact sheet, on-screen text (OCR)
 Ears  = transcript with word timing, loudness curve, silences, music bed, energy drops
 Brain = fixed-schema analysis (+ optional local AI verdict via Ollama)

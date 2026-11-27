@@ -1,6 +1,6 @@
 {
   "name": "harsh-ai-tools",
   "owner": {"name": "Harsh Rajput", "url": "https://github.com/harsh-ai-tools"},
-  "plugins": [{"name": "reel-radar", "source": "./", "description": "AI team that studies your competitors' YouTube Shorts & Instagram Reels and tells you what to make next."}],
+  "plugins": [{"name": "hook-radar", "source": "./", "description": "HookRadar: AI competitor & hook analyzer for Instagram Reels and YouTube Shorts. Studies competitors' videos and tells you what to make next."}],
   "description": "Free, local tools for creators by Harsh Rajput."
 }

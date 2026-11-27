@@ -1,6 +1,6 @@
 ---
 name: radar
-description: Reel Radar Manager (team lead). Use FIRST for any Reel Radar request in plain English (analyse my/competitors' videos, what should I post, is this idea good, write a script, grow my channel, weekly report). Routes to the one team member needed.
+description: HookRadar Manager (team lead). Use FIRST for any HookRadar request in plain English (analyse my/competitors' videos, what should I post, is this idea good, write a script, grow my channel, weekly report). Routes to the one team member needed.
 ---
 
 # 🧭 Manager
@@ -33,4 +33,4 @@ Load only the member the request needs:
 
 Reply short: what was done + the one next action.
 
-_Run from the Reel Radar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows)._
+_Run from the HookRadar folder (the one with `radar.py`): `python radar.py <cmd>` (`py` on Windows)._
